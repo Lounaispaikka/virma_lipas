@@ -3,3 +3,6 @@ psycopg2
 requests
 sqlalchemy
 GeoAlchemy2
+alembic
+diskcache
+coloredlogs

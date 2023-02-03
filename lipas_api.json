@@ -1,0 +1,2705 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Lipas-API",
+    "description": "Finnish sports places as open data",
+    "version": "0.9"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/api/sports-places": {
+      "get": {
+        "tags": [
+          "Sports places"
+        ],
+        "summary": "Get list of sports places",
+        "description": "Returns a list of sports places. The result set can be filtered by type-codes and city-codes. Result set content depends on selected fields. By default only the sports place id is returned.",
+        "parameters": [
+          {
+            "name": "closeToLon",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "closeToLat",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fi",
+                "en",
+                "se"
+              ]
+            }
+          },
+          {
+            "name": "modifiedAfter",
+            "in": "query",
+            "description": "Timestamp",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "properties",
+                  "schoolUse",
+                  "email",
+                  "type.name",
+                  "reservationsLink",
+                  "location.sportsPlaces",
+                  "renovationYears",
+                  "admin",
+                  "location.coordinates.tm35fin",
+                  "www",
+                  "location.geometries",
+                  "name",
+                  "type.typeCode",
+                  "location.locationId",
+                  "constructionYear",
+                  "freeUse",
+                  "location.city.name",
+                  "lastModified",
+                  "marketingName",
+                  "location.postalCode",
+                  "location.postalOffice",
+                  "location.city.cityCode",
+                  "phoneNumber",
+                  "location.neighborhood",
+                  "owner",
+                  "location.coordinates.wgs84",
+                  "location.address"
+                ]
+              }
+            }
+          },
+          {
+            "name": "retkikartta",
+            "in": "query",
+            "description": "Limit search to sports places that are also\n  visible in Retkikartta.fi",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "closeToMatch",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "start-point",
+                "any-point"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "closeToDistanceKm",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "harrastuspassi",
+            "in": "query",
+            "description": "Limit search to sports places that are also\n  visible in Harrastuspassi.fi",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "typeCodes",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "4451",
+                  "2220",
+                  "4820",
+                  "1150",
+                  "109",
+                  "2320",
+                  "4310",
+                  "6210",
+                  "2110",
+                  "108",
+                  "4440",
+                  "6120",
+                  "1620",
+                  "4110",
+                  "2150",
+                  "5160",
+                  "2360",
+                  "4404",
+                  "4520",
+                  "2350",
+                  "1380",
+                  "5320",
+                  "6220",
+                  "1520",
+                  "5310",
+                  "5110",
+                  "4840",
+                  "5120",
+                  "2260",
+                  "4530",
+                  "2310",
+                  "5360",
+                  "4401",
+                  "4810",
+                  "6110",
+                  "1610",
+                  "5370",
+                  "5140",
+                  "4230",
+                  "3240",
+                  "4710",
+                  "4320",
+                  "4405",
+                  "1110",
+                  "4630",
+                  "6140",
+                  "110",
+                  "1370",
+                  "1350",
+                  "1550",
+                  "4411",
+                  "4220",
+                  "106",
+                  "1640",
+                  "2210",
+                  "3110",
+                  "4240",
+                  "1360",
+                  "7000",
+                  "5210",
+                  "1390",
+                  "5150",
+                  "5340",
+                  "1560",
+                  "207",
+                  "2130",
+                  "2270",
+                  "4402",
+                  "4510",
+                  "5130",
+                  "2280",
+                  "2140",
+                  "4210",
+                  "206",
+                  "2295",
+                  "1395",
+                  "1180",
+                  "2230",
+                  "2340",
+                  "6130",
+                  "102",
+                  "301",
+                  "1130",
+                  "1210",
+                  "3210",
+                  "1630",
+                  "2240",
+                  "2530",
+                  "1160",
+                  "4830",
+                  "1510",
+                  "5330",
+                  "4620",
+                  "2120",
+                  "112",
+                  "1140",
+                  "2330",
+                  "103",
+                  "2290",
+                  "2380",
+                  "3230",
+                  "3220",
+                  "2610",
+                  "107",
+                  "205",
+                  "101",
+                  "111",
+                  "1540",
+                  "4640",
+                  "204",
+                  "2250",
+                  "4610",
+                  "1330",
+                  "203",
+                  "4452",
+                  "4403",
+                  "4422",
+                  "2520",
+                  "3120",
+                  "5350",
+                  "1340",
+                  "4412",
+                  "3130",
+                  "104",
+                  "201",
+                  "1320",
+                  "1310",
+                  "302",
+                  "304",
+                  "4421",
+                  "4430",
+                  "2370",
+                  "202",
+                  "2510",
+                  "1530",
+                  "4720",
+                  "1120",
+                  "1170",
+                  "1220"
+                ]
+              }
+            }
+          },
+          {
+            "name": "cityCodes",
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "537",
+                  "419",
+                  "783",
+                  "60",
+                  "532",
+                  "599",
+                  "708",
+                  "72",
+                  "219",
+                  "620",
+                  "751",
+                  "226",
+                  "559",
+                  "146",
+                  "14",
+                  "768",
+                  "109",
+                  "420",
+                  "152",
+                  "989",
+                  "906",
+                  "849",
+                  "433",
+                  "728",
+                  "235",
+                  "263",
+                  "988",
+                  "853",
+                  "594",
+                  "615",
+                  "890",
+                  "863",
+                  "398",
+                  "611",
+                  "971",
+                  "231",
+                  "562",
+                  "589",
+                  "778",
+                  "588",
+                  "108",
+                  "243",
+                  "544",
+                  "257",
+                  "499",
+                  "503",
+                  "541",
+                  "850",
+                  "319",
+                  "254",
+                  "691",
+                  "410",
+                  "186",
+                  "692",
+                  "608",
+                  "739",
+                  "182",
+                  "249",
+                  "290",
+                  "617",
+                  "165",
+                  "921",
+                  "45",
+                  "680",
+                  "149",
+                  "291",
+                  "538",
+                  "77",
+                  "909",
+                  "759",
+                  "908",
+                  "83",
+                  "905",
+                  "173",
+                  "895",
+                  "683",
+                  "485",
+                  "174",
+                  "265",
+                  "276",
+                  "255",
+                  "280",
+                  "943",
+                  "65",
+                  "316",
+                  "762",
+                  "980",
+                  "40",
+                  "183",
+                  "18",
+                  "640",
+                  "250",
+                  "737",
+                  "52",
+                  "614",
+                  "595",
+                  "859",
+                  "978",
+                  "734",
+                  "932",
+                  "430",
+                  "239",
+                  "175",
+                  "300",
+                  "76",
+                  "444",
+                  "592",
+                  "886",
+                  "625",
+                  "944",
+                  "75",
+                  "587",
+                  "776",
+                  "941",
+                  "919",
+                  "889",
+                  "482",
+                  "508",
+                  "619",
+                  "481",
+                  "10",
+                  "917",
+                  "922",
+                  "287",
+                  "573",
+                  "912",
+                  "184",
+                  "698",
+                  "710",
+                  "429",
+                  "507",
+                  "631",
+                  "831",
+                  "479",
+                  "172",
+                  "632",
+                  "891",
+                  "414",
+                  "247",
+                  "607",
+                  "585",
+                  "500",
+                  "297",
+                  "73",
+                  "616",
+                  "758",
+                  "61",
+                  "227",
+                  "925",
+                  "633",
+                  "142",
+                  "143",
+                  "425",
+                  "946",
+                  "140",
+                  "417",
+                  "887",
+                  "261",
+                  "223",
+                  "689",
+                  "208",
+                  "71",
+                  "746",
+                  "918",
+                  "931",
+                  "4",
+                  "748",
+                  "43",
+                  "775",
+                  "777",
+                  "489",
+                  "224",
+                  "576",
+                  "729",
+                  "216",
+                  "563",
+                  "506",
+                  "536",
+                  "79",
+                  "945",
+                  "95",
+                  "743",
+                  "317",
+                  "167",
+                  "240",
+                  "176",
+                  "211",
+                  "98",
+                  "755",
+                  "854",
+                  "106",
+                  "439",
+                  "415",
+                  "973",
+                  "16",
+                  "441",
+                  "139",
+                  "44",
+                  "402",
+                  "705",
+                  "273",
+                  "179",
+                  "85",
+                  "857",
+                  "701",
+                  "678",
+                  "694",
+                  "315",
+                  "534",
+                  "91",
+                  "586",
+                  "169",
+                  "476",
+                  "833",
+                  "210",
+                  "401",
+                  "426",
+                  "504",
+                  "704",
+                  "422",
+                  "602",
+                  "105",
+                  "893",
+                  "35",
+                  "81",
+                  "741",
+                  "164",
+                  "765",
+                  "78",
+                  "443",
+                  "431",
+                  "581",
+                  "730",
+                  "781",
+                  "491",
+                  "251",
+                  "292",
+                  "435",
+                  "241",
+                  "256",
+                  "436",
+                  "846",
+                  "153",
+                  "50",
+                  "682",
+                  "976",
+                  "770",
+                  "442",
+                  "62",
+                  "609",
+                  "838",
+                  "272",
+                  "233",
+                  "47",
+                  "74",
+                  "933",
+                  "248",
+                  "885",
+                  "9",
+                  "851",
+                  "20",
+                  "86",
+                  "638",
+                  "623",
+                  "177",
+                  "742",
+                  "218",
+                  "17",
+                  "181",
+                  "848",
+                  "284",
+                  "46",
+                  "845",
+                  "834",
+                  "312",
+                  "707",
+                  "102",
+                  "301",
+                  "478",
+                  "493",
+                  "754",
+                  "262",
+                  "260",
+                  "271",
+                  "603",
+                  "310",
+                  "732",
+                  "288",
+                  "445",
+                  "972",
+                  "979",
+                  "289",
+                  "320",
+                  "403",
+                  "749",
+                  "832",
+                  "924",
+                  "498",
+                  "911",
+                  "700",
+                  "49",
+                  "684",
+                  "245",
+                  "784",
+                  "841",
+                  "584",
+                  "981",
+                  "928",
+                  "772",
+                  "19",
+                  "580",
+                  "405",
+                  "937",
+                  "630",
+                  "399",
+                  "322",
+                  "69",
+                  "923",
+                  "560",
+                  "285",
+                  "774",
+                  "103",
+                  "148",
+                  "598",
+                  "940",
+                  "266",
+                  "791",
+                  "279",
+                  "915",
+                  "606",
+                  "214",
+                  "252",
+                  "766",
+                  "858",
+                  "306",
+                  "790",
+                  "5",
+                  "916",
+                  "567",
+                  "529",
+                  "935",
+                  "771",
+                  "484",
+                  "413",
+                  "992",
+                  "90",
+                  "217",
+                  "975",
+                  "738",
+                  "277",
+                  "295",
+                  "205",
+                  "583",
+                  "101",
+                  "281",
+                  "582",
+                  "246",
+                  "111",
+                  "305",
+                  "490",
+                  "244",
+                  "15",
+                  "561",
+                  "578",
+                  "145",
+                  "220",
+                  "171",
+                  "204",
+                  "308",
+                  "438",
+                  "151",
+                  "626",
+                  "892",
+                  "604",
+                  "99",
+                  "293",
+                  "97",
+                  "686",
+                  "178",
+                  "624",
+                  "309",
+                  "408",
+                  "687",
+                  "543",
+                  "286",
+                  "835",
+                  "6",
+                  "494",
+                  "434",
+                  "406",
+                  "926",
+                  "785",
+                  "283",
+                  "747",
+                  "697",
+                  "259",
+                  "400",
+                  "593",
+                  "424",
+                  "475",
+                  "213",
+                  "533",
+                  "936",
+                  "318",
+                  "150",
+                  "303",
+                  "51",
+                  "299",
+                  "740",
+                  "407",
+                  "82",
+                  "702",
+                  "84",
+                  "618",
+                  "92",
+                  "421",
+                  "545",
+                  "761",
+                  "531",
+                  "753",
+                  "304",
+                  "501",
+                  "275",
+                  "564",
+                  "440",
+                  "418",
+                  "635",
+                  "934",
+                  "202",
+                  "856",
+                  "483",
+                  "977",
+                  "844",
+                  "636",
+                  "920",
+                  "535",
+                  "681",
+                  "601",
+                  "577",
+                  "927",
+                  "236",
+                  "855",
+                  "699",
+                  "505",
+                  "864",
+                  "942",
+                  "423",
+                  "230",
+                  "913",
+                  "495",
+                  "480",
+                  "232",
+                  "492",
+                  "540",
+                  "170",
+                  "180",
+                  "696",
+                  "163",
+                  "736",
+                  "837",
+                  "416",
+                  "212"
+                ]
+              }
+            }
+          },
+          {
+            "name": "searchString",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SportsPlace"
+                  }
+                }
+              },
+              "application/x-yaml": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SportsPlace"
+                  }
+                }
+              },
+              "application/edn": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SportsPlace"
+                  }
+                }
+              },
+              "application/transit+json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SportsPlace"
+                  }
+                }
+              },
+              "application/transit+msgpack": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SportsPlace"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-name": "lipas-api.routes.sports-places/get-sports-places"
+      },
+      "post": {
+        "tags": [
+          "Sports places"
+        ],
+        "summary": "Add Sports place",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fi",
+                "en",
+                "se"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSportsPlace"
+              }
+            },
+            "application/x-yaml": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSportsPlace"
+              }
+            },
+            "application/edn": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSportsPlace"
+              }
+            },
+            "application/transit+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSportsPlace"
+              }
+            },
+            "application/transit+msgpack": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSportsPlace"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/x-yaml": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/edn": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/transit+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/transit+msgpack": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name": "NewSportsPlace"
+      }
+    },
+    "/api/sports-places/{sports-place-id}": {
+      "get": {
+        "tags": [
+          "Sports places"
+        ],
+        "summary": "Get sports place",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fi",
+                "en",
+                "se"
+              ]
+            }
+          },
+          {
+            "name": "sports-place-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/x-yaml": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/edn": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/transit+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/transit+msgpack": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              }
+            }
+          }
+        },
+        "x-name": "lipas-api.routes.sports-places/get-sports-place"
+      },
+      "put": {
+        "tags": [
+          "Sports places"
+        ],
+        "summary": "Update Sports place",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fi",
+                "en",
+                "se"
+              ]
+            }
+          },
+          {
+            "name": "sports-place-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSportsPlace"
+              }
+            },
+            "application/x-yaml": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSportsPlace"
+              }
+            },
+            "application/edn": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSportsPlace"
+              }
+            },
+            "application/transit+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSportsPlace"
+              }
+            },
+            "application/transit+msgpack": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSportsPlace"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/x-yaml": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/edn": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/transit+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/transit+msgpack": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name": "NewSportsPlace"
+      },
+      "delete": {
+        "tags": [
+          "Sports places"
+        ],
+        "summary": "Delete Sports place",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fi",
+                "en",
+                "se"
+              ]
+            }
+          },
+          {
+            "name": "sports-place-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/api/location/{location-id}/sports-places": {
+      "post": {
+        "tags": [
+          "Sports places"
+        ],
+        "summary": "Add Sports place to existing Location",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fi",
+                "en",
+                "se"
+              ]
+            }
+          },
+          {
+            "name": "location-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSportsPlaceForExistingLocation"
+              }
+            },
+            "application/x-yaml": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSportsPlaceForExistingLocation"
+              }
+            },
+            "application/edn": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSportsPlaceForExistingLocation"
+              }
+            },
+            "application/transit+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSportsPlaceForExistingLocation"
+              }
+            },
+            "application/transit+msgpack": {
+              "schema": {
+                "$ref": "#/components/schemas/NewSportsPlaceForExistingLocation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/x-yaml": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/edn": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/transit+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              },
+              "application/transit+msgpack": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsPlace"
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name": "NewSportsPlaceForExistingLocation"
+      }
+    },
+    "/api/sports-place-types": {
+      "get": {
+        "tags": [
+          "Sports place types"
+        ],
+        "summary": "Get list of sports place types",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fi",
+                "en",
+                "se"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SportsplaceTypeListItem"
+                  }
+                }
+              },
+              "application/x-yaml": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SportsplaceTypeListItem"
+                  }
+                }
+              },
+              "application/edn": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SportsplaceTypeListItem"
+                  }
+                }
+              },
+              "application/transit+json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SportsplaceTypeListItem"
+                  }
+                }
+              },
+              "application/transit+msgpack": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SportsplaceTypeListItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sports-place-types/{type-code}": {
+      "get": {
+        "tags": [
+          "Sports place types"
+        ],
+        "summary": "Get sports place type",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fi",
+                "en",
+                "se"
+              ]
+            }
+          },
+          {
+            "name": "type-code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsplaceType"
+                }
+              },
+              "application/x-yaml": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsplaceType"
+                }
+              },
+              "application/edn": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsplaceType"
+                }
+              },
+              "application/transit+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsplaceType"
+                }
+              },
+              "application/transit+msgpack": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportsplaceType"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "tags": [
+          "Sports place types"
+        ],
+        "summary": "Get list of sports place type categories",
+        "description": "Official categorization of sports place types",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fi",
+                "en",
+                "se"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MainCategory"
+                  }
+                }
+              },
+              "application/x-yaml": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MainCategory"
+                  }
+                }
+              },
+              "application/edn": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MainCategory"
+                  }
+                }
+              },
+              "application/transit+json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MainCategory"
+                  }
+                }
+              },
+              "application/transit+msgpack": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MainCategory"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/deleted-sports-places": {
+      "get": {
+        "tags": [
+          "Sports places"
+        ],
+        "summary": "Get list of deleted sportsPlaces",
+        "description": "Optionally 'since' query param can be given\n                            to get sportsPlaces deleted after some point in time.",
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "description": "Timestamp",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeletedSportsPlacesResp"
+                  }
+                }
+              },
+              "application/x-yaml": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeletedSportsPlacesResp"
+                  }
+                }
+              },
+              "application/edn": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeletedSportsPlacesResp"
+                  }
+                }
+              },
+              "application/transit+json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeletedSportsPlacesResp"
+                  }
+                }
+              },
+              "application/transit+msgpack": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeletedSportsPlacesResp"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "City": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "City name",
+            "example": "Espoo"
+          },
+          "cityCode": {
+            "type": "integer",
+            "description": "Official city code without 0-prefixes",
+            "format": "int64",
+            "example": 49
+          }
+        }
+      },
+      "Coordinates": {
+        "type": "object",
+        "properties": {
+          "wgs84": {
+            "$ref": "#/components/schemas/Point"
+          },
+          "tm35fin": {
+            "$ref": "#/components/schemas/Point"
+          }
+        },
+        "description": "Simple Point coordinates of the location.",
+        "example": {
+          "wgs84": {
+            "lon": 25.718659,
+            "lat": 62.6023221
+          },
+          "tm35fin": {
+            "lon": 434218,
+            "lat": 6941935
+          }
+        }
+      },
+      "DeletedSportsPlacesResp": {
+        "required": [
+          "deletedAt",
+          "sportsPlaceId"
+        ],
+        "type": "object",
+        "properties": {
+          "deletedAt": {
+            "type": "string",
+            "description": "Timestamp",
+            "example": "2012-04-23T18:25:43.511Z"
+          },
+          "sportsPlaceId": {
+            "type": "integer",
+            "description": "Unique identifier of sports place",
+            "format": "int64",
+            "example": 508207
+          }
+        }
+      },
+      "Location": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Street address",
+            "example": "Lemminkäisenkatu 13"
+          },
+          "coordinates": {
+            "$ref": "#/components/schemas/Coordinates"
+          },
+          "locationId": {
+            "type": "integer",
+            "description": "Unique identifier of a Location",
+            "format": "int64",
+            "example": 26706
+          },
+          "city": {
+            "$ref": "#/components/schemas/City"
+          },
+          "postalOffice": {
+            "type": "string",
+            "description": "Postal office",
+            "example": "Turku"
+          },
+          "postalCode": {
+            "type": "string",
+            "description": "Postal code",
+            "example": "20520"
+          },
+          "neighborhood": {
+            "type": "string",
+            "description": "Neighborhood name",
+            "example": "Metsämäki"
+          },
+          "geometries": {
+            "$ref": "#/components/schemas/Response388474LocationGeometries"
+          },
+          "sportsPlaces": {
+            "type": "array",
+            "description": "SportsPlaces in this Location",
+            "example": [
+              508207
+            ],
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        },
+        "description": "Location of the sports place"
+      },
+      "MainCategory": {
+        "required": [
+          "name",
+          "subCategories",
+          "typeCode"
+        ],
+        "type": "object",
+        "properties": {
+          "typeCode": {
+            "type": "integer",
+            "description": "Unique type code",
+            "format": "int64",
+            "example": 1000
+          },
+          "name": {
+            "type": "string",
+            "description": "Main-category name",
+            "example": "Outdoor fields and sports parks"
+          },
+          "subCategories": {
+            "type": "array",
+            "description": "Sub-categories in this main-category",
+            "items": {
+              "$ref": "#/components/schemas/SubCategory"
+            }
+          }
+        }
+      },
+      "NewLocation": {
+        "required": [
+          "address",
+          "city",
+          "geometries",
+          "postalCode"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Street address",
+            "example": "Lemminkäisenkatu 13"
+          },
+          "geometries": {
+            "$ref": "#/components/schemas/NewSportsPlaceLocationGeometries"
+          },
+          "postalCode": {
+            "type": "string",
+            "description": "Postal code",
+            "example": "20520"
+          },
+          "neighborhood": {
+            "type": "string",
+            "description": "Neighborhood name",
+            "example": "Metsämäki"
+          },
+          "postalOffice": {
+            "type": "string",
+            "description": "Postal office",
+            "example": "Turku"
+          },
+          "city": {
+            "$ref": "#/components/schemas/NewSportsPlaceLocationCity"
+          }
+        }
+      },
+      "NewSportsPlace": {
+        "required": [
+          "admin",
+          "location",
+          "name",
+          "owner",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "properties": {
+            "$ref": "#/components/schemas/Properties"
+          },
+          "schoolUse": {
+            "type": "boolean",
+            "description": "Schools use this sports place"
+          },
+          "email": {
+            "type": "string",
+            "description": "",
+            "nullable": true,
+            "example": "mail@example.fi"
+          },
+          "reservationsLink": {
+            "type": "string",
+            "description": "",
+            "nullable": true,
+            "example": "www.example.fi/reservations/velodrome"
+          },
+          "renovationYears": {
+            "type": "array",
+            "description": "List of renovation years",
+            "example": [
+              1990,
+              2015
+            ],
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "admin": {
+            "type": "string",
+            "enum": [
+              "private-foundation",
+              "city-other",
+              "municipal-consortium",
+              "private-company",
+              "private-association",
+              "other",
+              "city-technical-services",
+              "city-sports",
+              "state",
+              "city-education",
+              "no-information"
+            ]
+          },
+          "www": {
+            "type": "string",
+            "description": "",
+            "nullable": true,
+            "example": "www.example.fi/velodrome"
+          },
+          "name": {
+            "type": "string",
+            "description": "Primary (Finnish) name of the sports place",
+            "example": "Äänekosken velodromi"
+          },
+          "type": {
+            "$ref": "#/components/schemas/NewSportsPlaceType"
+          },
+          "constructionYear": {
+            "type": "integer",
+            "description": "",
+            "format": "int64",
+            "example": 1987
+          },
+          "freeUse": {
+            "type": "boolean",
+            "description": "Sports place is accessible without fees or reservation"
+          },
+          "lastModified": {
+            "type": "string",
+            "description": "Last modification timestamp in Europe/Helsinki TZ",
+            "example": "2012-04-23T18:25:43.511Z"
+          },
+          "nameEn": {
+            "type": "string",
+            "description": "English name of the sports place",
+            "example": "The Velodrome of Äänekoski"
+          },
+          "marketingName": {
+            "type": "string",
+            "description": "Sports place marketing name",
+            "example": "Microsoft turbo velodrome"
+          },
+          "nameSe": {
+            "type": "string",
+            "description": "Swedish name of the sports place",
+            "example": "Äänekoski velodrom"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "",
+            "nullable": true,
+            "example": "(02) 262 3510"
+          },
+          "location": {
+            "$ref": "#/components/schemas/NewLocation"
+          },
+          "owner": {
+            "type": "string",
+            "enum": [
+              "municipal-consortium",
+              "other",
+              "company-ltd",
+              "city",
+              "state",
+              "registered-association",
+              "no-information",
+              "foundation",
+              "city-main-owner"
+            ]
+          }
+        }
+      },
+      "NewSportsPlaceForExistingLocation": {
+        "required": [
+          "admin",
+          "name",
+          "owner",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "properties": {
+            "$ref": "#/components/schemas/Properties"
+          },
+          "schoolUse": {
+            "type": "boolean",
+            "description": "Schools use this sports place"
+          },
+          "email": {
+            "type": "string",
+            "description": "",
+            "nullable": true,
+            "example": "mail@example.fi"
+          },
+          "reservationsLink": {
+            "type": "string",
+            "description": "",
+            "nullable": true,
+            "example": "www.example.fi/reservations/velodrome"
+          },
+          "renovationYears": {
+            "type": "array",
+            "description": "List of renovation years",
+            "example": [
+              1990,
+              2015
+            ],
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "admin": {
+            "type": "string",
+            "enum": [
+              "private-foundation",
+              "city-other",
+              "municipal-consortium",
+              "private-company",
+              "private-association",
+              "other",
+              "city-technical-services",
+              "city-sports",
+              "state",
+              "city-education",
+              "no-information"
+            ]
+          },
+          "www": {
+            "type": "string",
+            "description": "",
+            "nullable": true,
+            "example": "www.example.fi/velodrome"
+          },
+          "name": {
+            "type": "string",
+            "description": "Primary (Finnish) name of the sports place",
+            "example": "Äänekosken velodromi"
+          },
+          "type": {
+            "$ref": "#/components/schemas/NewSportsPlaceForExistingLocationType"
+          },
+          "constructionYear": {
+            "type": "integer",
+            "description": "",
+            "format": "int64",
+            "example": 1987
+          },
+          "freeUse": {
+            "type": "boolean",
+            "description": "Sports place is accessible without fees or reservation"
+          },
+          "lastModified": {
+            "type": "string",
+            "description": "Last modification timestamp in Europe/Helsinki TZ",
+            "example": "2012-04-23T18:25:43.511Z"
+          },
+          "nameEn": {
+            "type": "string",
+            "description": "English name of the sports place",
+            "example": "The Velodrome of Äänekoski"
+          },
+          "marketingName": {
+            "type": "string",
+            "description": "Sports place marketing name",
+            "example": "Microsoft turbo velodrome"
+          },
+          "nameSe": {
+            "type": "string",
+            "description": "Swedish name of the sports place",
+            "example": "Äänekoski velodrom"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "",
+            "nullable": true,
+            "example": "(02) 262 3510"
+          },
+          "owner": {
+            "type": "string",
+            "enum": [
+              "municipal-consortium",
+              "other",
+              "company-ltd",
+              "city",
+              "state",
+              "registered-association",
+              "no-information",
+              "foundation",
+              "city-main-owner"
+            ]
+          }
+        }
+      },
+      "NewSportsPlaceForExistingLocationType": {
+        "type": "object",
+        "properties": {
+          "typeCode": {
+            "type": "integer",
+            "description": "Sports place type code",
+            "format": "int64",
+            "example": 1170
+          }
+        }
+      },
+      "NewSportsPlaceLocationCity": {
+        "type": "object",
+        "properties": {
+          "cityCode": {
+            "type": "integer",
+            "description": "Official city code without 0-prefixes",
+            "format": "int64",
+            "example": 49
+          }
+        }
+      },
+      "NewSportsPlaceLocationGeometries": {
+        "required": [
+          "features",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FeatureCollection"
+            ]
+          },
+          "features": {
+            "type": "object",
+            "x-oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/NewSportsPlaceLocationGeometriesFeatures"
+                }
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/NewSportsPlaceLocationGeometriesFeatures"
+                }
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/NewSportsPlaceLocationGeometriesFeatures"
+                }
+              }
+            ]
+          }
+        },
+        "additionalProperties": {
+          "type": "object"
+        },
+        "description": "GeoJSON Feature Collection containing full geometries related to location.",
+        "example": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "geometry": {
+                "coordinates": [
+                  6688033.7986891,
+                  267305.53139548
+                ],
+                "type": "Point"
+              },
+              "properties": {
+                "pointId": 500305
+              }
+            }
+          ]
+        }
+      },
+      "NewSportsPlaceLocationGeometriesFeatures": {
+        "required": [
+          "geometry",
+          "properties",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Feature"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/NewSportsPlaceLocationGeometriesFeaturesGeometry"
+          },
+          "properties": {
+            "$ref": "#/components/schemas/NewSportsPlaceLocationGeometriesFeaturesProperties"
+          }
+        },
+        "additionalProperties": {
+          "type": "object"
+        }
+      },
+      "NewSportsPlaceLocationGeometriesFeaturesGeometry": {
+        "required": [
+          "coordinates",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Point"
+            ]
+          }
+        },
+        "additionalProperties": {
+          "type": "object"
+        }
+      },
+      "NewSportsPlaceLocationGeometriesFeaturesProperties": {
+        "type": "object",
+        "properties": {
+          "pointId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "NewSportsPlaceType": {
+        "type": "object",
+        "properties": {
+          "typeCode": {
+            "type": "integer",
+            "description": "Sports place type code",
+            "format": "int64",
+            "example": 1170
+          }
+        }
+      },
+      "Point": {
+        "required": [
+          "lat",
+          "lon"
+        ],
+        "type": "object",
+        "properties": {
+          "lon": {
+            "type": "number",
+            "format": "double"
+          },
+          "lat": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "Properties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "description": "Value of the property (type depends on dataType)",
+          "x-oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number",
+              "format": "double"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer",
+              "format": "int64"
+            }
+          ]
+        },
+        "description": "Additional properties of the sports place. Applicable keys depend on sports place type. ",
+        "example": {
+          "areaM2": 61,
+          "surfaceMaterial": "Nurmi"
+        }
+      },
+      "PropertyTypes": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/"
+        },
+        "description": "Additional properties of the sports place",
+        "example": {
+          "trackLengthM": {
+            "name": "Length of track m",
+            "description": "Track length in meters",
+            "dataType": "numeric"
+          },
+          "ligthing": {
+            "name": "Lighting",
+            "description": "Place has lights?",
+            "dataType": "boolean"
+          }
+        }
+      },
+      "Response388474LocationGeometries": {
+        "required": [
+          "features",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FeatureCollection"
+            ]
+          },
+          "features": {
+            "type": "object",
+            "x-oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/Response388474LocationGeometriesFeatures"
+                }
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/Response388474LocationGeometriesFeatures"
+                }
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/Response388474LocationGeometriesFeatures"
+                }
+              }
+            ]
+          }
+        },
+        "additionalProperties": {
+          "type": "object"
+        },
+        "description": "GeoJSON Feature Collection containing full geometries related to location.",
+        "example": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "geometry": {
+                "coordinates": [
+                  6688033.7986891,
+                  267305.53139548
+                ],
+                "type": "Point"
+              },
+              "properties": {
+                "pointId": 500305
+              }
+            }
+          ]
+        }
+      },
+      "Response388474LocationGeometriesFeatures": {
+        "required": [
+          "geometry",
+          "properties",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Feature"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/Response388474LocationGeometriesFeaturesGeometry"
+          },
+          "properties": {
+            "$ref": "#/components/schemas/Response388474LocationGeometriesFeaturesProperties"
+          }
+        },
+        "additionalProperties": {
+          "type": "object"
+        }
+      },
+      "Response388474LocationGeometriesFeaturesGeometry": {
+        "required": [
+          "coordinates",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Point"
+            ]
+          }
+        },
+        "additionalProperties": {
+          "type": "object"
+        }
+      },
+      "Response388474LocationGeometriesFeaturesProperties": {
+        "type": "object",
+        "properties": {
+          "pointId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "SportsPlace": {
+        "required": [
+          "sportsPlaceId"
+        ],
+        "type": "object",
+        "properties": {
+          "properties": {
+            "$ref": "#/components/schemas/Properties"
+          },
+          "schoolUse": {
+            "type": "boolean",
+            "description": "Schools use this sports place"
+          },
+          "email": {
+            "type": "string",
+            "description": "",
+            "nullable": true,
+            "example": "mail@example.fi"
+          },
+          "reservationsLink": {
+            "type": "string",
+            "description": "",
+            "nullable": true,
+            "example": "www.example.fi/reservations/velodrome"
+          },
+          "renovationYears": {
+            "type": "array",
+            "description": "List of renovation years",
+            "example": [
+              1990,
+              2015
+            ],
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "admin": {
+            "type": "string",
+            "description": "Human friendly sports place administrator name",
+            "example": "Municipality / Sports"
+          },
+          "www": {
+            "type": "string",
+            "description": "",
+            "nullable": true,
+            "example": "www.example.fi/velodrome"
+          },
+          "name": {
+            "type": "string",
+            "description": "Sports place name",
+            "example": "Kupittaa Velodrome"
+          },
+          "type": {
+            "$ref": "#/components/schemas/Type"
+          },
+          "constructionYear": {
+            "type": "integer",
+            "description": "",
+            "format": "int64",
+            "example": 1987
+          },
+          "freeUse": {
+            "type": "boolean",
+            "description": "Sports place is accessible without fees or reservation"
+          },
+          "lastModified": {
+            "type": "string",
+            "description": "Last modification timestamp in Europe/Helsinki TZ",
+            "example": "2012-04-23T18:25:43.511Z"
+          },
+          "marketingName": {
+            "type": "string",
+            "description": "Sports place marketing name",
+            "example": "Microsoft turbo velodrome"
+          },
+          "sportsPlaceId": {
+            "type": "integer",
+            "description": "Unique identifier of sports place",
+            "format": "int64",
+            "example": 508207
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "",
+            "nullable": true,
+            "example": "(02) 262 3510"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Human friendly sports place owner name",
+            "example": "Municipality"
+          }
+        }
+      },
+      "SportsPlaceLocationGeometries": {
+        "required": [
+          "features",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FeatureCollection"
+            ]
+          },
+          "features": {
+            "type": "object",
+            "x-oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/SportsPlaceLocationGeometriesFeatures"
+                }
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/SportsPlaceLocationGeometriesFeatures"
+                }
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/SportsPlaceLocationGeometriesFeatures"
+                }
+              }
+            ]
+          }
+        },
+        "additionalProperties": {
+          "type": "object"
+        },
+        "description": "GeoJSON Feature Collection containing full geometries related to location.",
+        "example": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "geometry": {
+                "coordinates": [
+                  6688033.7986891,
+                  267305.53139548
+                ],
+                "type": "Point"
+              },
+              "properties": {
+                "pointId": 500305
+              }
+            }
+          ]
+        }
+      },
+      "SportsPlaceLocationGeometriesFeatures": {
+        "required": [
+          "geometry",
+          "properties",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Feature"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "geometry": {
+            "$ref": "#/components/schemas/SportsPlaceLocationGeometriesFeaturesGeometry"
+          },
+          "properties": {
+            "$ref": "#/components/schemas/SportsPlaceLocationGeometriesFeaturesProperties"
+          }
+        },
+        "additionalProperties": {
+          "type": "object"
+        }
+      },
+      "SportsPlaceLocationGeometriesFeaturesGeometry": {
+        "required": [
+          "coordinates",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Point"
+            ]
+          }
+        },
+        "additionalProperties": {
+          "type": "object"
+        }
+      },
+      "SportsPlaceLocationGeometriesFeaturesProperties": {
+        "type": "object",
+        "properties": {
+          "pointId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "SportsplaceType": {
+        "required": [
+          "description",
+          "geometryType",
+          "name",
+          "properties",
+          "subCategory",
+          "typeCode"
+        ],
+        "type": "object",
+        "properties": {
+          "typeCode": {
+            "type": "integer",
+            "description": "Unique type code",
+            "format": "int64",
+            "example": 1170
+          },
+          "name": {
+            "type": "string",
+            "description": "Type name",
+            "example": "Velodrome"
+          },
+          "description": {
+            "type": "string",
+            "description": "Type description",
+            "nullable": true,
+            "example": "A nice type"
+          },
+          "geometryType": {
+            "type": "string",
+            "enum": [
+              "LineString",
+              "Point",
+              "Polygon"
+            ]
+          },
+          "subCategory": {
+            "type": "integer",
+            "description": "Sub-category type code",
+            "format": "int64",
+            "example": 1100
+          },
+          "properties": {
+            "$ref": "#/components/schemas/PropertyTypes"
+          }
+        }
+      },
+      "SportsplaceTypeListItem": {
+        "required": [
+          "description",
+          "geometryType",
+          "name",
+          "subCategory",
+          "typeCode"
+        ],
+        "type": "object",
+        "properties": {
+          "typeCode": {
+            "type": "integer",
+            "description": "Unique type code",
+            "format": "int64",
+            "example": 1170
+          },
+          "name": {
+            "type": "string",
+            "description": "Type name",
+            "example": "Velodrome"
+          },
+          "description": {
+            "type": "string",
+            "description": "Type description",
+            "nullable": true,
+            "example": "A nice type"
+          },
+          "geometryType": {
+            "type": "string",
+            "enum": [
+              "LineString",
+              "Point",
+              "Polygon"
+            ]
+          },
+          "subCategory": {
+            "type": "integer",
+            "description": "Sub-category type code",
+            "format": "int64",
+            "example": 1100
+          }
+        }
+      },
+      "SportsplaceTypeProperties": {
+        "required": [
+          "dataType",
+          "description",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Human friendly property name",
+            "example": "Length (m)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the property",
+            "nullable": true,
+            "example": "A nice prop"
+          },
+          "dataType": {
+            "type": "string",
+            "enum": [
+              "boolean",
+              "numeric",
+              "string",
+              "integer"
+            ]
+          }
+        }
+      },
+      "SubCategory": {
+        "required": [
+          "name",
+          "sportsPlaceTypes",
+          "typeCode"
+        ],
+        "type": "object",
+        "properties": {
+          "typeCode": {
+            "type": "integer",
+            "description": "Unique type code",
+            "format": "int64",
+            "example": 1100
+          },
+          "name": {
+            "type": "string",
+            "description": "Sub-category name",
+            "example": "Athletics fields and venues"
+          },
+          "sportsPlaceTypes": {
+            "type": "array",
+            "description": "Sportsplace types in this sub-category",
+            "example": [
+              1110,
+              1120,
+              1130,
+              1140,
+              1150,
+              1160,
+              1170,
+              1180
+            ],
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        }
+      },
+      "Type": {
+        "type": "object",
+        "properties": {
+          "typeCode": {
+            "type": "integer",
+            "description": "Sports place type code",
+            "format": "int64",
+            "example": 1170
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the type code",
+            "example": "Velodrome"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "login": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  }
+}
