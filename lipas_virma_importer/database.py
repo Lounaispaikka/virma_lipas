@@ -14,6 +14,8 @@ from sqlalchemy.orm import relationship, backref
 from geoalchemy2 import Geometry
 from sqlalchemy.sql import func
 from sqlalchemy import Enum
+import sqlalchemy.orm.session
+
 #import coloredlogs
 log = logging.getLogger(__name__)
 
@@ -278,9 +280,8 @@ def connect():
 
 
 
-def sports_places_by_id(session,sports_place_ids):
-    query = session.query(Lipas.sports_place_id,Lipas.lastModified).filter(Lipas.sports_place_id.in_(sports_place_ids))
-    #query.delete(synchronize_session=False)
+def sports_places_by_id(session: sqlalchemy.orm.session.Session,sports_place_ids):
+    query = session.query(Lipas).filter(Lipas.sports_place_id.in_(sports_place_ids))
     return query
 
 if __name__ == "__main__":
