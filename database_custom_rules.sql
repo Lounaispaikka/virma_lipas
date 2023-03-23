@@ -30,7 +30,7 @@ comment on view lipas_all is '(unused?) Shows all classified lipas entries';
 drop view if exists lipas_manage;
 create or replace view lipas_manage as
 select
-	la.sports_place_id,
+	l.sports_place_id,
 	l.geom_type,
 	l.type_code as type_code,
 	lt.type_name as type_name,
@@ -110,115 +110,130 @@ comment on view lipas_routes is 'Shows all classified lipas routes (for geoserve
 
 
 
+/**************************/
+
+
+
+
 drop view if exists routes_combined;
 create or replace view routes_combined as
 
 (
-select
-	'virma' as datasource,
-	gid,
-	geom,
-	id,
-	class1_fi,
-	class1_se,
-	class1_en,
-	class2_fi,
-	class2_se,
-	class2_en,
-	name_fi,
-	name_se,
-	name_en,
-	municipali,
-	subregion,
-	region,
-	info_fi,
-	info_se,
-	info_en,
-	chall_clas,
-	length_m,
-	accessibil,
-	www_fi,
-	www_se,
-	www_en,
-	email,
-	telephone,
-	upkeeper,
-	upkeepinfo,
-	upkeepclas,
-	shapeestim,
-	sh_es_date,
-	sh_es_pers,
-	timestamp,
-	updater_id,
-	special,
-	munici_nro,
-	subreg_nro,
-	region_nro,
-	publicinfo,
-	picture,
-	www_picture,
-	hidden
-from
-	routes r
-where
-r.hidden = false
-  )
-  
-union all
-(
-select 
-  'lipas' as datasource, 
-  l.sports_place_id as gid, 
-  l.geom as geom, 
-  l.sports_place_id as id, 
-  l.class1_fi as class1_fi, 
-  cc.class1_se as class1_se,
-  cc.class1_en as class1_en, 
-  l.class2_fi as class2_fi, 
-  cc2.class2_se,
-  cc2.class2_en,
-  l.name_fi as name_fi, 
-  null as name_se, 
-  null as name_en, 
-  null as municipali, 
-  null as subregion, 
-  null as region, 
-  null as info_fi, 
-  null as info_se, 
-  null as info_en, 
-  null as chall_clas, 
-  l.length_m as length_m,
-  null as accessibil, 
-  l.www as www_fi, 
-  null as www_se, 
-  null as www_en, 
-  l.upkeepinfo as email, 
-  null as telephone, 
-  null as upkeeper, 
-  l.upkeepinfo as upkeepinfo, 
-  null as upkeepclas, 
-  null as shapeestim, 
-  null as sh_es_date, 
-  null as sh_es_pers, 
-  null as timestamp, 
-  null as updater_id, 
-  null as special, 
-  null as munici_nro, 
-  null as subreg_nro, 
-  null as region_nro, 
-  'T' as publicinfo, 
-  null as picture, 
-  null as www_picture, 
-  false as hidden
-from 
-  lipas_routes l
-left join class1 cc on
-cc.class1_fi = l.class1_fi
-left join class2 cc2 on
-cc2.class2_fi = l.class2_fi
-where true );
+	select
+		gid,
+		geom,
+		id,
+		'virma'::text as datasource,
+		class1_fi,
+		class1_se,
+		class1_en,
+		class2_fi,
+		class2_se,
+		class2_en,
+		name_fi,
+		name_se,
+		name_en,
+		municipali,
+		subregion,
+		region,
+		info_fi,
+		info_se,
+		info_en,
+		chall_clas,
+		length_m,
+		accessibil,
+		www_fi,
+		www_se,
+		www_en,
+		email,
+		telephone,
+		case
+			  when (publicinfo)::boolean is TRUE then
+			    upkeeper
+			  else
+			    null
+			  end as upkeeper,
+			  
+	  	case
+		  when (publicinfo)::boolean is TRUE then
+		    upkeepinfo
+		  else
+		    null
+		  end as upkeepinfo,
+		upkeepclas,
+		shapeestim,
+		sh_es_date,
+		sh_es_pers,
+		"timestamp",
+		updater_id,
+		special,
+		munici_nro,
+		subreg_nro,
+		region_nro,
+		publicinfo::boolean,
+		picture,
+		www_picture,
+		hidden
+	from
+		routes r
+) union all (
+	select 
+	  l.gid as gid, 
+	  l.geom as geom, 
+	  l.sports_place_id as id, 
+	  'lipas'::text as datasource, 
+	  la.class1_fi as class1_fi, 
+	  cc.class1_se as class1_se,
+	  cc.class1_en as class1_en, 
+	  la.class2_fi as class2_fi, 
+	  cc2.class2_se,
+	  cc2.class2_en,
+	  l.name_fi as name_fi, 
+	  null as name_se, 
+	  null as name_en, 
+	  null as municipali, 
+	  null as subregion, 
+	  null as region, 
+	  null as info_fi, 
+	  null as info_se, 
+	  null as info_en, 
+	  null as chall_clas, 
+	  l.length_m as length_m,
+	  null as accessibil, 
+	  l.www as www_fi, 
+	  null as www_se, 
+	  null as www_en, 
+	  l.email as email, 
+	  null as telephone, 
+	  null as upkeeper, 
+	  l.email as upkeepinfo, 
+	  null as upkeepclas, 
+	  null as shapeestim, 
+	  null as sh_es_date, 
+	  null as sh_es_pers, 
+	  null as timestamp, 
+	  null as updater_id, 
+	  null as special, 
+	  null as munici_nro, 
+	  null as subreg_nro, 
+	  null as region_nro, 
+	  TRUE as publicinfo,
+	  null as picture, 
+	  null as www_picture, 
+	  false as hidden
+	from 
+	  lipas l
+	left join lipas_annotations la on
+		l.sports_place_id = la.sports_place_id
+	left join class1 cc on
+		cc.class1_fi = la.class1_fi
+	left join class2 cc2 on
+		cc2.class2_fi = la.class2_fi
+	where la.class1_fi <> '' and l.geom_type = 'route'::public."geometrytype" 
 
-comment on view routes_combined is 'Shows all classified routes (for geoserver)';
+);
+  
+comment on view routes_combined is 'Shows all classified routes public info (for geoserver)';
 
 
 
@@ -229,105 +244,115 @@ drop view if exists points_combined;
 create or replace view points_combined as
 
 (
-select
-	'virma' as datasource,
-	gid,
-	geom,
-	id,
-	class1_fi,
-	class1_se,
-	class1_en,
-	class2_fi,
-	class2_se,
-	class2_en,
-	name_fi,
-	name_se,
-	name_en,
-	municipali,
-	subregion,
-	region,
-	info_fi,
-	info_se,
-	info_en,
-	chall_clas,
-	accessibil,
-	www_fi,
-	www_se,
-	www_en,
-	email,
-	telephone,
-	upkeeper,
-	upkeepinfo,
-	upkeepclas,
-	shapeestim,
-	sh_es_date,
-	sh_es_pers,
-	timestamp,
-	updater_id,
-	special,
-	munici_nro,
-	subreg_nro,
-	region_nro,
-	publicinfo,
-	picture,
-	www_picture,
-	hidden
-from
-	points r
-where
-r.hidden = false
-  )
-  
-union all
-(
-select 
-  'lipas' as datasource, 
-  l.sports_place_id as gid, 
-  l.geom as geom, 
-  l.sports_place_id as id, 
-  l.class1_fi as class1_fi, 
-  cc.class1_se as class1_se,
-  cc.class1_en as class1_en, 
-  l.class2_fi as class2_fi, 
-  cc2.class2_se,
-  cc2.class2_en,
-  l.name_fi as name_fi, 
-  null as name_se, 
-  null as name_en, 
-  null as municipali, 
-  null as subregion, 
-  null as region, 
-  null as info_fi, 
-  null as info_se, 
-  null as info_en, 
-  null as chall_clas, 
-  null as accessibil, 
-  l.www as www_fi, 
-  null as www_se, 
-  null as www_en, 
-  l.upkeepinfo as email, 
-  null as telephone, 
-  null as upkeeper, 
-  l.upkeepinfo as upkeepinfo, 
-  null as upkeepclas, 
-  null as shapeestim, 
-  null as sh_es_date, 
-  null as sh_es_pers, 
-  null as timestamp, 
-  null as updater_id, 
-  null as special, 
-  null as munici_nro, 
-  null as subreg_nro, 
-  null as region_nro, 
-  'T' as publicinfo, 
-  null as picture, 
-  null as www_picture, 
-  false as hidden
-from 
-  lipas_points l
-left join class1 cc on
-cc.class1_fi = l.class1_fi
-left join class2 cc2 on
-cc2.class2_fi = l.class2_fi
-where true );
+	select
+		gid,
+		geom,
+		id,
+		'virma'::text as datasource,
+		class1_fi,
+		class1_se,
+		class1_en,
+		class2_fi,
+		class2_se,
+		class2_en,
+		name_fi,
+		name_se,
+		name_en,
+		municipali,
+		subregion,
+		region,
+		info_fi,
+		info_se,
+		info_en,
+		chall_clas,
+		accessibil,
+		www_fi,
+		www_se,
+		www_en,
+		email,
+		telephone,
+	  
+		case
+			  when (publicinfo)::boolean is TRUE then
+			    upkeeper
+			  else
+			    null
+			  end as upkeeper,
+			  
+	  	case
+		  when (publicinfo)::boolean is TRUE then
+		    upkeepinfo
+		  else
+		    null
+		  end as upkeepinfo,
+		upkeepclas,
+		shapeestim,
+		sh_es_date,
+		sh_es_pers,
+		"timestamp",
+		updater_id,
+		special,
+		munici_nro,
+		subreg_nro,
+		region_nro,
+		publicinfo::boolean,
+		picture,
+		www_picture,
+		hidden
+	from
+		points r
+) union all (
+	select 
+	  l.gid as gid, 
+	  l.geom as geom, 
+	  l.sports_place_id as id, 
+	  'lipas'::text as datasource, 
+	  la.class1_fi as class1_fi, 
+	  cc.class1_se as class1_se,
+	  cc.class1_en as class1_en, 
+	  la.class2_fi as class2_fi, 
+	  cc2.class2_se,
+	  cc2.class2_en,
+	  l.name_fi as name_fi, 
+	  null as name_se, 
+	  null as name_en, 
+	  null as municipali, 
+	  null as subregion, 
+	  null as region, 
+	  null as info_fi, 
+	  null as info_se, 
+	  null as info_en, 
+	  null as chall_clas, 
+	  null as accessibil, 
+	  l.www as www_fi, 
+	  null as www_se, 
+	  null as www_en, 
+	  l.email as email, 
+	  null as telephone, 
+	  null as upkeeper, 
+	  l.email as upkeepinfo, 
+	  null as upkeepclas, 
+	  null as shapeestim, 
+	  null as sh_es_date, 
+	  null as sh_es_pers, 
+	  null as timestamp, 
+	  null as updater_id, 
+	  null as special, 
+	  null as munici_nro, 
+	  null as subreg_nro, 
+	  null as region_nro, 
+	  TRUE as publicinfo,
+	  null as picture, 
+	  null as www_picture, 
+	  false as hidden
+	from 
+	  lipas l
+	left join lipas_annotations la on
+		l.sports_place_id = la.sports_place_id
+	left join class1 cc on
+		cc.class1_fi = la.class1_fi
+	left join class2 cc2 on
+		cc2.class2_fi = la.class2_fi
+	where la.class1_fi <> '' and l.geom_type = 'point'::public."geometrytype"
+);
 comment on view points_combined is 'Shows all classified routes (for geoserver)';
