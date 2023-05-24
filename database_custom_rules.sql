@@ -113,246 +113,228 @@ comment on view lipas_routes is 'Shows all classified lipas routes (for geoserve
 /**************************/
 
 
+CREATE OR REPLACE VIEW public.routes_combined
+AS SELECT r.gid,
+    r.geom,
+    r.id,
+    'virma'::text AS datasource,
+    r.class1_fi,
+    r.class1_se,
+    r.class1_en,
+    r.class2_fi,
+    r.class2_se,
+    r.class2_en,
+    r.name_fi,
+    r.name_se,
+    r.name_en,
+    r.municipali,
+    r.subregion,
+    r.region,
+    r.info_fi,
+    r.info_se,
+    r.info_en,
+    r.chall_clas,
+    r.length_m,
+    r.accessibil,
+    r.www_fi,
+    r.www_se,
+    r.www_en,
+    r.email,
+    r.telephone,
+        CASE
+            WHEN r.publicinfo::boolean IS TRUE THEN r.upkeeper
+            ELSE NULL::character varying
+        END AS upkeeper,
+        CASE
+            WHEN r.publicinfo::boolean IS TRUE THEN r.upkeepinfo
+            ELSE NULL::character varying
+        END AS upkeepinfo,
+    r.upkeepclas,
+    r.shapeestim,
+    r.sh_es_date,
+    r.sh_es_pers,
+    r."timestamp",
+    r.updater_id,
+    r.special,
+    r.munici_nro,
+    r.subreg_nro,
+    r.region_nro,
+    r.publicinfo::boolean AS publicinfo,
+    r.picture,
+    r.www_picture,
+    r.hidden
+   FROM routes r
+UNION ALL
+ SELECT l.gid,
+    l.geom,
+    l.sports_place_id AS id,
+    'lipas'::text AS datasource,
+    la.class1_fi,
+    cc.class1_se,
+    cc.class1_en,
+    la.class2_fi,
+    cc2.class2_se,
+    cc2.class2_en,
+    l.name_fi,
+    NULL::character varying AS name_se,
+    NULL::character varying AS name_en,
+    NULL::character varying AS municipali,
+    NULL::character varying AS subregion,
+    NULL::character varying AS region,
+    NULL::text AS info_fi,
+    NULL::text AS info_se,
+    NULL::text AS info_en,
+    NULL::text AS chall_clas,
+    l.length_m,
+    NULL::text AS accessibil,
+    l.www AS www_fi,
+    NULL::character varying AS www_se,
+    NULL::character varying AS www_en,
+    l.email,
+    NULL::character varying AS telephone,
+    NULL::character varying AS upkeeper,
+    l.email AS upkeepinfo,
+    NULL::character varying AS upkeepclas,
+    NULL::character varying AS shapeestim,
+    NULL::date AS sh_es_date,
+    NULL::character varying AS sh_es_pers,
+    NULL::date AS "timestamp",
+    NULL::character varying AS updater_id,
+    NULL::character varying AS special,
+    NULL::character varying AS munici_nro,
+    NULL::character varying AS subreg_nro,
+    NULL::character varying AS region_nro,
+    true AS publicinfo,
+    NULL::character varying AS picture,
+    NULL::character varying AS www_picture,
+    false AS hidden
+   FROM lipas l
+     LEFT JOIN lipas_annotations la ON l.sports_place_id = la.sports_place_id
+     LEFT JOIN class1 cc ON cc.class1_fi::text = la.class1_fi::text
+     LEFT JOIN class2 cc2 ON cc2.class2_fi::text = la.class2_fi::text
+  WHERE la.class1_fi::text <> ''::text AND l.geom_type = 'route'::geometrytype;
 
 
-drop view if exists routes_combined;
-create or replace view routes_combined as
-
-(
-	select
-		gid,
-		geom,
-		id,
-		'virma'::text as datasource,
-		class1_fi,
-		class1_se,
-		class1_en,
-		class2_fi,
-		class2_se,
-		class2_en,
-		name_fi,
-		name_se,
-		name_en,
-		municipali,
-		subregion,
-		region,
-		info_fi,
-		info_se,
-		info_en,
-		chall_clas,
-		length_m,
-		accessibil,
-		www_fi,
-		www_se,
-		www_en,
-		email,
-		telephone,
-		case
-			  when (publicinfo)::boolean is TRUE then
-			    upkeeper
-			  else
-			    null
-			  end as upkeeper,
-			  
-	  	case
-		  when (publicinfo)::boolean is TRUE then
-		    upkeepinfo
-		  else
-		    null
-		  end as upkeepinfo,
-		upkeepclas,
-		shapeestim,
-		sh_es_date,
-		sh_es_pers,
-		"timestamp",
-		updater_id,
-		special,
-		munici_nro,
-		subreg_nro,
-		region_nro,
-		publicinfo::boolean,
-		picture,
-		www_picture,
-		hidden
-	from
-		routes r
-) union all (
-	select 
-	  l.gid as gid, 
-	  l.geom as geom, 
-	  l.sports_place_id as id, 
-	  'lipas'::text as datasource, 
-	  la.class1_fi as class1_fi, 
-	  cc.class1_se as class1_se,
-	  cc.class1_en as class1_en, 
-	  la.class2_fi as class2_fi, 
-	  cc2.class2_se,
-	  cc2.class2_en,
-	  l.name_fi as name_fi, 
-	  null as name_se, 
-	  null as name_en, 
-	  null as municipali, 
-	  null as subregion, 
-	  null as region, 
-	  null as info_fi, 
-	  null as info_se, 
-	  null as info_en, 
-	  null as chall_clas, 
-	  l.length_m as length_m,
-	  null as accessibil, 
-	  l.www as www_fi, 
-	  null as www_se, 
-	  null as www_en, 
-	  l.email as email, 
-	  null as telephone, 
-	  null as upkeeper, 
-	  l.email as upkeepinfo, 
-	  null as upkeepclas, 
-	  null as shapeestim, 
-	  null as sh_es_date, 
-	  null as sh_es_pers, 
-	  null as timestamp, 
-	  null as updater_id, 
-	  null as special, 
-	  null as munici_nro, 
-	  null as subreg_nro, 
-	  null as region_nro, 
-	  TRUE as publicinfo,
-	  null as picture, 
-	  null as www_picture, 
-	  false as hidden
-	from 
-	  lipas l
-	left join lipas_annotations la on
-		l.sports_place_id = la.sports_place_id
-	left join class1 cc on
-		cc.class1_fi = la.class1_fi
-	left join class2 cc2 on
-		cc2.class2_fi = la.class2_fi
-	where la.class1_fi <> '' and l.geom_type = 'route'::public."geometrytype" 
-
-);
-  
 comment on view routes_combined is 'Shows all classified routes public info (for geoserver)';
 
 
 
-
-
-
-drop view if exists points_combined;
-create or replace view points_combined as
-
-(
-	select
-		gid,
-		geom,
-		id,
-		'virma'::text as datasource,
-		class1_fi,
-		class1_se,
-		class1_en,
-		class2_fi,
-		class2_se,
-		class2_en,
-		name_fi,
-		name_se,
-		name_en,
-		municipali,
-		subregion,
-		region,
-		info_fi,
-		info_se,
-		info_en,
-		chall_clas,
-		accessibil,
-		www_fi,
-		www_se,
-		www_en,
-		email,
-		telephone,
-	  
-		case
-			  when (publicinfo)::boolean is TRUE then
-			    upkeeper
-			  else
-			    null
-			  end as upkeeper,
-			  
-	  	case
-		  when (publicinfo)::boolean is TRUE then
-		    upkeepinfo
-		  else
-		    null
-		  end as upkeepinfo,
-		upkeepclas,
-		shapeestim,
-		sh_es_date,
-		sh_es_pers,
-		"timestamp",
-		updater_id,
-		special,
-		munici_nro,
-		subreg_nro,
-		region_nro,
-		publicinfo::boolean,
-		picture,
-		www_picture,
-		hidden
-	from
-		points r
-) union all (
-	select 
-	  l.gid as gid, 
-	  l.geom as geom, 
-	  l.sports_place_id as id, 
-	  'lipas'::text as datasource, 
-	  la.class1_fi as class1_fi, 
-	  cc.class1_se as class1_se,
-	  cc.class1_en as class1_en, 
-	  la.class2_fi as class2_fi, 
-	  cc2.class2_se,
-	  cc2.class2_en,
-	  l.name_fi as name_fi, 
-	  null as name_se, 
-	  null as name_en, 
-	  null as municipali, 
-	  null as subregion, 
-	  null as region, 
-	  null as info_fi, 
-	  null as info_se, 
-	  null as info_en, 
-	  null as chall_clas, 
-	  null as accessibil, 
-	  l.www as www_fi, 
-	  null as www_se, 
-	  null as www_en, 
-	  l.email as email, 
-	  null as telephone, 
-	  null as upkeeper, 
-	  l.email as upkeepinfo, 
-	  null as upkeepclas, 
-	  null as shapeestim, 
-	  null as sh_es_date, 
-	  null as sh_es_pers, 
-	  null as timestamp, 
-	  null as updater_id, 
-	  null as special, 
-	  null as munici_nro, 
-	  null as subreg_nro, 
-	  null as region_nro, 
-	  TRUE as publicinfo,
-	  null as picture, 
-	  null as www_picture, 
-	  false as hidden
-	from 
-	  lipas l
-	left join lipas_annotations la on
-		l.sports_place_id = la.sports_place_id
-	left join class1 cc on
-		cc.class1_fi = la.class1_fi
-	left join class2 cc2 on
-		cc2.class2_fi = la.class2_fi
-	where la.class1_fi <> '' and l.geom_type = 'point'::public."geometrytype"
-);
+CREATE OR REPLACE VIEW public.points_combined
+AS SELECT r.gid,
+    r.geom,
+    r.id,
+    'virma'::text AS datasource,
+    r.class1_fi,
+    r.class1_se,
+    r.class1_en,
+    r.class2_fi,
+    r.class2_se,
+    r.class2_en,
+    r.name_fi,
+    r.name_se,
+    r.name_en,
+    r.municipali,
+    r.subregion,
+    r.region,
+    r.info_fi,
+    r.info_se,
+    r.info_en,
+    r.chall_clas,
+    r.accessibil,
+    r.www_fi,
+    r.www_se,
+    r.www_en,
+    r.email,
+    r.telephone,
+        CASE
+            WHEN r.publicinfo::boolean IS TRUE THEN r.upkeeper
+            ELSE NULL::character varying
+        END AS upkeeper,
+        CASE
+            WHEN r.publicinfo::boolean IS TRUE THEN r.upkeepinfo
+            ELSE NULL::character varying
+        END AS upkeepinfo,
+    r.upkeepclas,
+    r.shapeestim,
+    r.sh_es_date,
+    r.sh_es_pers,
+    r."timestamp",
+    r.updater_id,
+    r.special,
+    r.munici_nro,
+    r.subreg_nro,
+    r.region_nro,
+    r.publicinfo::boolean AS publicinfo,
+    r.picture,
+    r.www_picture,
+    r.hidden
+   FROM points r
+UNION ALL
+ SELECT l.gid,
+    l.geom,
+    l.sports_place_id AS id,
+    'lipas'::text AS datasource,
+    la.class1_fi,
+    cc.class1_se,
+    cc.class1_en,
+    la.class2_fi,
+    cc2.class2_se,
+    cc2.class2_en,
+    l.name_fi,
+    NULL::character varying AS name_se,
+    NULL::character varying AS name_en,
+    NULL::character varying AS municipali,
+    NULL::character varying AS subregion,
+    NULL::character varying AS region,
+    NULL::text AS info_fi,
+    NULL::text AS info_se,
+    NULL::text AS info_en,
+    NULL::text AS chall_clas,
+    NULL::text AS accessibil,
+    l.www AS www_fi,
+    NULL::character varying AS www_se,
+    NULL::character varying AS www_en,
+    l.email,
+    NULL::character varying AS telephone,
+    NULL::character varying AS upkeeper,
+    l.email AS upkeepinfo,
+    NULL::character varying AS upkeepclas,
+    NULL::character varying AS shapeestim,
+    NULL::date AS sh_es_date,
+    NULL::character varying AS sh_es_pers,
+    NULL::date AS "timestamp",
+    NULL::character varying AS updater_id,
+    NULL::character varying AS special,
+    NULL::character varying AS munici_nro,
+    NULL::character varying AS subreg_nro,
+    NULL::character varying AS region_nro,
+    true AS publicinfo,
+    NULL::character varying AS picture,
+    NULL::character varying AS www_picture,
+    false AS hidden
+   FROM lipas l
+     LEFT JOIN lipas_annotations la ON l.sports_place_id = la.sports_place_id
+     LEFT JOIN class1 cc ON cc.class1_fi::text = la.class1_fi::text
+     LEFT JOIN class2 cc2 ON cc2.class2_fi::text = la.class2_fi::text
+  WHERE la.class1_fi::text <> ''::text AND l.geom_type = 'point'::geometrytype;
 comment on view points_combined is 'Shows all classified routes (for geoserver)';
+
+
+
+
+GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.routes_combined TO virma;
+GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.points_combined TO virma;
+GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.lipas_all TO virma;
+GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.lipas_manage TO virma;
+GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.lipas_annotations TO virma;
+GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.lipas_routes TO virma;
+GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.lipas_points TO virma;
+
+
+GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.routes_combined TO datauser;
+GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.points_combined TO datauser;
+GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.lipas_all TO datauser;
+GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.lipas_manage TO datauser;
+GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.lipas_annotations TO datauser;
+GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.lipas_routes TO datauser;
+GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.lipas_points TO datauser;
