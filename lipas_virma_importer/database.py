@@ -124,9 +124,10 @@ class LipasTypes(Base):
     typeName = Column('type_name',String, unique=False, nullable=False,comment="typeName")
     typeName_se = Column('type_name_se',String, unique=False, nullable=True,comment="typeName se")
     typeName_en = Column('type_name_en',String, unique=False, nullable=True,comment="typeName en")
+    import_enabled = Column('import',Boolean, unique=False, nullable=False, default=True, comment="should this type be imported from lipas")
     
     def __repr__(self):
-        return f"<LipasType (id={self.typeCode!r}, name={self.typeName!r})>"
+        return f"<LipasType (id={self.typeCode!r}, name={self.typeName!r}, import={self.import_enabled!r})>"
 
 class LipasConfig(Base):
 
@@ -175,6 +176,12 @@ statement_get_annotation_scores = text("""
         class2_fi,
         type_code
 """)
+
+@lru_cache(maxsize=2)
+def get_ignored_lipas_types():
+    with ReadySession() as session:
+        q=session.query(LipasTypes.import_enabled,LipasTypes.typeCode).filter(LipasTypes.import_enabled == False)
+        return [row[1] for row in session.execute(q)]
 
 @lru_cache(maxsize=2)
 def get_annotation_scores():
@@ -234,7 +241,7 @@ def latest_delete_query_time(set_latest=None):
         last_deletion_query = session.query(LipasConfig).filter_by(key = 'last_deletion_query').first()
         
         if set_latest:
-            print("Setting last_deletion_query %s",set_latest)
+            log.info("Setting last_deletion_query %s",set_latest)
             if last_deletion_query:
                 last_deletion_query.val_date=set_latest
             else:
@@ -249,7 +256,7 @@ def last_import_time(session,set_latest=None):
     last_import = session.query(LipasConfig).filter_by(key = 'last_import').first()
     
     if set_latest:
-        print("Setting last_import %s",set_latest)
+        log.info("Setting last_import %s",set_latest)
         if last_import:
             last_import.val_date=set_latest
         else:

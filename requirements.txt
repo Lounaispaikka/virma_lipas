@@ -8,3 +8,4 @@ diskcache
 coloredlogs
 geojson
 pyproj
+sentry-sdk

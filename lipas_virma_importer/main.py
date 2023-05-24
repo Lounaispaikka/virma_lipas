@@ -1,5 +1,9 @@
 from . import config
 DEBUG=config.DEBUG
+if config.SENTRY_DSN:
+    #TODO: BUG: TEST: https://github.com/getsentry/sentry-python/issues/1941#issuecomment-1467873449
+    import sentry_sdk
+    sentry_sdk.init(config.SENTRY_DSN)
 
 from collections import defaultdict
 import logging
@@ -34,6 +38,7 @@ log.info("Starting lipas")
 log.debug("Debug logging enabled")
 
 from . import database as db
+#TODO: untested, buggy
 langs = ["fi"]  #,"sv","en"]
 
 sportsPlaceTypes=None
@@ -72,12 +77,16 @@ def buildSportsPlaceTypes():
 def build_stat_classifications_kunta():
     return lipas_api.get_stat_classifications_kunta()
 
+ignored_types = db.get_ignored_lipas_types()
+if ignored_types:
+    log.info("Import ignoring sport place types: %s",ignored_types)
+
 importModifiedAfter = db.latestModifiedLipas() 
 if importModifiedAfter:
     # TODO: Maybe excessive safety margin
     importModifiedAfter = importModifiedAfter-timedelta(days=1)
 elif DEBUG:
-    logging.error("EMPTY DATABASE: Requesting at most only 30 days of changed data for testing only!!")
+    log.error("EMPTY DATABASE: Requesting at most only 30 days of changed data for testing only!!")
     importModifiedAfter= datetime.now()-timedelta(days=30)
 
 def processPlace(place, lang,session):
@@ -99,6 +108,9 @@ def processPlace(place, lang,session):
         length_m=length_m*1000
 
     typeCode = place["type"]["type-code"]
+    if ignored_types and typeCode in ignored_types:
+        return
+    
     typeinfo = sportsPlaceTypes[lang][typeCode]
     #test
     typeName = typeinfo["name"]
