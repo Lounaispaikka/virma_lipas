@@ -1,5 +1,11 @@
 -- TODO: move these to a proper migration
 
+CREATE TYPE public."virma_datasources" AS ENUM (
+	'notknown',
+	'virma',
+	'lipas',
+	'openstreetmap');
+
 drop view if exists lipas_all;
 create or replace view lipas_all as
 select
@@ -112,12 +118,11 @@ comment on view lipas_routes is 'Shows all classified lipas routes (for geoserve
 
 /**************************/
 
-
 CREATE OR REPLACE VIEW public.routes_combined
 AS SELECT r.gid,
     r.geom,
     r.id,
-    'virma'::text AS datasource,
+    r.datasource,
     r.class1_fi,
     r.class1_se,
     r.class1_en,
@@ -168,7 +173,7 @@ UNION ALL
  SELECT l.gid,
     l.geom,
     l.sports_place_id AS id,
-    'lipas'::text AS datasource,
+    'lipas'::virma_datasources AS datasource,
     la.class1_fi,
     cc.class1_se,
     cc.class1_en,
@@ -213,17 +218,19 @@ UNION ALL
      LEFT JOIN class1 cc ON cc.class1_fi::text = la.class1_fi::text
      LEFT JOIN class2 cc2 ON cc2.class2_fi::text = la.class2_fi::text
   WHERE la.class1_fi::text <> ''::text AND l.geom_type = 'route'::geometrytype;
-
-
+  
+ 
+ 
 comment on view routes_combined is 'Shows all classified routes public info (for geoserver)';
 
 
 
+drop view public.points_combined;
 CREATE OR REPLACE VIEW public.points_combined
 AS SELECT r.gid,
     r.geom,
     r.id,
-    'virma'::text AS datasource,
+    r.datasource,
     r.class1_fi,
     r.class1_se,
     r.class1_en,
@@ -241,6 +248,7 @@ AS SELECT r.gid,
     r.info_en,
     r.chall_clas,
     r.accessibil,
+    r.equipment,
     r.www_fi,
     r.www_se,
     r.www_en,
@@ -273,7 +281,7 @@ UNION ALL
  SELECT l.gid,
     l.geom,
     l.sports_place_id AS id,
-    'lipas'::text AS datasource,
+    'lipas'::virma_datasources AS datasource,
     la.class1_fi,
     cc.class1_se,
     cc.class1_en,
@@ -291,6 +299,7 @@ UNION ALL
     NULL::text AS info_en,
     NULL::text AS chall_clas,
     NULL::text AS accessibil,
+    NULL::text AS equipment,
     l.www AS www_fi,
     NULL::character varying AS www_se,
     NULL::character varying AS www_en,
@@ -321,7 +330,6 @@ comment on view points_combined is 'Shows all classified routes (for geoserver)'
 
 
 
-
 GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.routes_combined TO virma;
 GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.points_combined TO virma;
 GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.lipas_all TO virma;
@@ -338,3 +346,4 @@ GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE pub
 GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.lipas_annotations TO datauser;
 GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.lipas_routes TO datauser;
 GRANT SELECT, UPDATE, INSERT, TRUNCATE, DELETE, TRIGGER, REFERENCES ON TABLE public.lipas_points TO datauser;
+
