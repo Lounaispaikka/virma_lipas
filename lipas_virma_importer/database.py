@@ -125,7 +125,9 @@ class LipasTypes(Base):
     typeName_se = Column('type_name_se',String, unique=False, nullable=True,comment="typeName se")
     typeName_en = Column('type_name_en',String, unique=False, nullable=True,comment="typeName en")
     import_enabled = Column('import',Boolean, unique=False, nullable=False, default=True, comment="should this type be imported from lipas")
-    
+    #TODO:
+    # geometry_type = Column('geometry_type',Enum(GeometryType), unique=False, nullable=False,comment="geom column type")
+        
     def __repr__(self):
         return f"<LipasType (id={self.typeCode!r}, name={self.typeName!r}, import={self.import_enabled!r})>"
 

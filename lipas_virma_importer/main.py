@@ -23,7 +23,8 @@ crs_geojson = CRS.from_epsg(4326) # CRS84 is equivalent to WGS84 for which the s
 
 import geojson,json
 from shapely.ops import transform
-
+from shapely.ops import linemerge
+from shapely.geometry import MultiLineString
 fromGeoJSONToOurProjection = pyproj.Transformer.from_crs(crs_geojson, crs, always_xy=True).transform
 
 
@@ -53,18 +54,16 @@ def buildSportsPlaceTypes():
         with db.ReadySession.begin() as session:
             for entry in resp.json():
                 typeCode=entry["typeCode"]
+                geometryType = lipas_api.toGeoEnum(entry["geometryType"])
                 t[typeCode]={
                     "name": entry["name"],
-                    "geometryType": lipas_api.toGeoEnum(entry["geometryType"]),
+                    "geometryType": geometryType,
                     #"description": entry["description"],
                     "subCategory": entry["subCategory"],
                 }
-                #lipasType = session.query(db.LipasTypes).filter(db.LipasTypes.typeCode == typeCode).first()
-                #if lipasType:
-            #     lipasType.typeName=entry["name"]
-                #else:
+                
                 lipasType=db.LipasTypes(typeCode=entry["typeCode"],
-                                    typeName=entry["name"])
+                                    typeName=entry["name"])#TODO: ,geometryType=geometryType)
 
                 session.merge(lipasType)
         sportsPlaceTypes[lang] = t
@@ -90,16 +89,35 @@ elif DEBUG:
     importModifiedAfter= datetime.now()-timedelta(days=30)
 
 def processPlace(place, lang,session):
+    sports_place_id = place["sportsPlaceId"]
+
+    typeCode = place["type"]["typeCode"]
+    if ignored_types and typeCode in ignored_types:
+        return
+    
+
+    typeinfo = sportsPlaceTypes[lang][typeCode]
+
+
+    typeName = typeinfo["name"]
+    geometryType = typeinfo["geometryType"]
+    # Areas are not supported (2023 decision, Lounaistieto)
+    if geometryType == db.GeometryType.area:
+        return
+
+    # Download additional info from new undocumented API
     sportsPlaceMeta = lipas_api.get_sports_place(place["sportsPlaceId"])
     place.update(sportsPlaceMeta)
-    if not place.get("freeUse", True) and config.onlyFreeUse:
-        return #TODO: BUG: freeUse flag might be toggled, remove if hidden
 
-    assert place["lipas-id"]==place["sportsPlaceId"]
+
+    if not place.get("freeUse", True) and config.onlyFreeUse:
+        return #TODO: BUG: freeUse flag might be toggled after initial run, won't remove alreayd imported data currently and stops updating it
+
+    # check that undocumented ids match
+    assert place["lipas-id"]==sports_place_id
 
     loc = place["location"]
     geometries = loc["geometries"]
-    sports_place_id = place["sportsPlaceId"]
     www = place.get("www")
     name = place["name"]
     comment = place.get("comment")
@@ -107,20 +125,22 @@ def processPlace(place, lang,session):
     if length_m:
         length_m=length_m*1000
 
-    typeCode = place["type"]["type-code"]
-    if ignored_types and typeCode in ignored_types:
-        return
-    
-    typeinfo = sportsPlaceTypes[lang][typeCode]
-    #test
-    typeName = typeinfo["name"]
 
+    # geojson cannot load tables, we must redump our data
     geomFeature=geojson.loads(json.dumps(geometries))
-    assert geomFeature.is_valid,str(geomFeature.errors())
-    #
-    geometry = geomFeature[0]["geometry"]
-    shaped = transform(fromGeoJSONToOurProjection, shape(geometry))
     
+    assert geomFeature.is_valid,str(geomFeature.errors())
+    
+    
+    if geometryType == db.GeometryType.route:
+        # merge linestrings to multilinestring
+        shaped = MultiLineString([transform(fromGeoJSONToOurProjection, shape(f.geometry)) for f in geomFeature.features])
+    else:
+
+        geometry = geomFeature[0]["geometry"]
+        assert len(geomFeature.features)==1
+        shaped = transform(fromGeoJSONToOurProjection, shape(geometry))
+        
     # GeoJSON and PSQL coordinate orders are different 
 
     # sports_place_id=510679
@@ -129,7 +149,10 @@ def processPlace(place, lang,session):
     # POINT (222780  6734461) EXAMPLE OK
     #geom = ST_FlipCoordinates(ST_GeomFromEWKT(from_shape(shaped)))
     
+    # Make sure we are still what we say we are
     geomType = db.shapelyTypeToDB[shaped.type]
+    assert geometryType==geomType
+
     geom = from_shape(shaped,config.epsg)
 
     lastModified = datetime.strptime(place["lastModified"],
@@ -218,7 +241,7 @@ def main():
     log.info("Running build_stat_classifications_kunta()")
     stat_class = build_stat_classifications_kunta()
     log.info("Running downloadSportsPlacesUpdates(%s,after %s)",langs,importModifiedAfter)
-    sportsPlaces = lipas_api.downloadSportsPlacesUpdates(langs,importModifiedAfter=importModifiedAfter)
+    sportsPlaces = lipas_api.downloadSportsPlacesUpdates(langs,importModifiedAfter=None if config.FULL_UPDATE else importModifiedAfter)
     
     log.info("Running processSportPlaces()")
     processSportPlaces(sportsPlaces)

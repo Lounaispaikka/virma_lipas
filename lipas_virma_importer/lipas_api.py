@@ -48,8 +48,9 @@ def toGeoEnum(gtype):
 
 params = {
         "lang": "fi",
-        "cityCodes":    config.cityCodes, 
-        
+        "cityCodes":    config.cityCodes,  #TODO: api should not refer to config like this...
+        #"typeCodes": 4402, # Used for testing routes
+
         # 800 char url limit (header nginx)
         "fields": [
             "lastModified",
@@ -74,7 +75,7 @@ params = {
         #    "properties",
         #    "renovationYears",
         #    "schoolUse",
-        #    "type.typeCode",
+            "type.typeCode", # Needed to filter out areas
         #    "www",
         ],
         
