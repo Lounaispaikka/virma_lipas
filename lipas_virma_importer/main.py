@@ -13,6 +13,7 @@ from time import time
 from datetime import datetime, timedelta
 from . import database
 from shapely.geometry import asShape
+import shapely.wkb
 from geoalchemy2.shape import from_shape
 from shapely.geometry import shape, GeometryCollection
 import pyproj
@@ -140,7 +141,12 @@ def processPlace(place, lang,session):
         geometry = geomFeature[0]["geometry"]
         assert len(geomFeature.features)==1
         shaped = transform(fromGeoJSONToOurProjection, shape(geometry))
-        
+    
+    if shaped.has_z:
+        #TODO: Store Z
+        #From: https://github.com/shapely/shapely/issues/709#issuecomment-816504794
+        shaped=shapely.wkb.loads(shapely.wkb.dumps(shaped, output_dimension=2))
+    
     # GeoJSON and PSQL coordinate orders are different 
 
     # sports_place_id=510679
