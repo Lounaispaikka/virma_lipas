@@ -217,7 +217,7 @@ UNION ALL
      LEFT JOIN lipas_annotations la ON l.sports_place_id = la.sports_place_id
      LEFT JOIN class1 cc ON cc.class1_fi::text = la.class1_fi::text
      LEFT JOIN class2 cc2 ON cc2.class2_fi::text = la.class2_fi::text
-  WHERE la.class1_fi::text <> ''::text AND l.geom_type = 'route'::geometrytype;
+  WHERE hidden is false and la.class1_fi::text <> ''::text AND l.geom_type = 'route'::geometrytype;
   
  
  
@@ -325,7 +325,7 @@ UNION ALL
      LEFT JOIN lipas_annotations la ON l.sports_place_id = la.sports_place_id
      LEFT JOIN class1 cc ON cc.class1_fi::text = la.class1_fi::text
      LEFT JOIN class2 cc2 ON cc2.class2_fi::text = la.class2_fi::text
-  WHERE la.class1_fi::text <> ''::text AND l.geom_type = 'point'::geometrytype;
+  WHERE hidden is false AND la.class1_fi::text <> ''::text AND l.geom_type = 'point'::geometrytype;
 comment on view points_combined is 'Shows all classified routes (for geoserver)';
 
 
