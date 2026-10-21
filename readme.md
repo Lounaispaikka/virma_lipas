@@ -48,6 +48,31 @@ The settings are read from the environment. For development they can be kept in
 a `.env` file in the project root, which is not tracked in git. See
 `.env.example` for the available options.
 
+### Database migrations
+
+The schema of the tables of this project is managed with
+[Alembic](https://alembic.sqlalchemy.org/), the migrations are in
+`alembic/versions`.
+
+```shell
+uv run alembic upgrade head                  # apply the migrations
+uv run alembic current                       # show the applied revision
+uv run alembic check                         # check that the database matches the models
+```
+
+An existing database that was created before the migrations were introduced can
+be marked as up to date without running them:
+
+```shell
+uv run alembic stamp head
+```
+
+The database is shared with the other projects of the Virma application, so the
+migrations only touch the tables of this project: `class1`, `class2`,
+`lipas_config`, `lipas_types`, `lipas` and `lipas_annotations`. The views, the
+rules and the grants of the other projects are in `database_custom_rules.sql`,
+they are not managed by the migrations.
+
 ### The views are not refreshed by the importer
 
 The importer only writes to the `lipas`, `lipas_annotations` and `lipas_config`
@@ -71,6 +96,7 @@ The importer runs as a nightly cron job. Prepare the environment once:
 cd /home/lipas/virma_lipas
 uv sync --locked
 cp .env.example .env                       # and edit the database credentials
+uv run alembic upgrade head                 # apply the migrations, if needed
 ```
 
 and run it with (the environment is not synced again, the lockfile is not

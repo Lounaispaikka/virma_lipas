@@ -6,7 +6,22 @@ from functools import lru_cache
 import sqlalchemy
 import sqlalchemy.orm.session
 from geoalchemy2 import Geometry
-from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, create_engine, func, or_, text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    Sequence,
+    String,
+    UniqueConstraint,
+    create_engine,
+    func,
+    or_,
+    text,
+)
 from sqlalchemy.orm import contains_eager, declarative_base, relationship, sessionmaker
 
 from . import config
@@ -29,7 +44,7 @@ class Lipas(Base):
 
     __tablename__ = 'lipas'
 
-    sports_place_id = Column('sports_place_id', Integer, primary_key=True,comment="lipas id")
+    sports_place_id = Column('sports_place_id', Integer, primary_key=True, autoincrement=False, comment="lipas id")
     lastModified = Column('last_modified',DateTime, unique=False, server_default=func.now(), nullable=False,comment="Automatically updated last modified date from lipas")
 
     typeCode = Column('type_code',Integer, ForeignKey("lipas_types.type_code"), unique=False, nullable=False,comment="lipas category")
@@ -38,7 +53,7 @@ class Lipas(Base):
     name_fi = Column(String, unique=False, nullable=False,comment="name of place")
     info_fi = Column(String, unique=False, nullable=True,comment="lipas comment")
     www = Column(String, unique=False, nullable=True,comment="webpage")
-    geom = Column(Geometry(srid=config.epsg), unique=False, nullable=False,comment="geometry, can be point or (m)linestring/route or possibly an area")
+    geom = Column(Geometry(srid=config.epsg, spatial_index=False), unique=False, nullable=False,comment="geometry, can be point or (m)linestring/route or possibly an area")
     geomType = Column('geom_type',Enum(GeometryType), unique=False, nullable=False,comment="geom column type (possibly redundant)")
 
     #class1_fi = Column(String, unique=False, nullable=True,comment="virma class1")
@@ -54,7 +69,20 @@ class Lipas(Base):
     #www_picture = Column(String, unique=False, nullable=True,comment="URL to image")
     length_m = Column(Integer, unique=False, nullable=True,comment="autocalculated length if route")
 
+    # The gid is unique across all the tables of the virma application, the
+    # sequence starts high enough for the other projects of the database. The
+    # sequence is created by the alembic migrations, it is not owned by the
+    # column, so the other projects can use it as well.
+    gid = Column('gid', Integer, server_default=text("nextval('virma_gid_generator')"), unique=False, nullable=False,
+                 comment="virma gid for uniqueness across all tables")
+
     annotation = relationship("Annotations", cascade="all,delete", uselist=False, backref="lipas")
+
+    __table_args__ = (
+        Index('idx_lipas_geom', 'geom', postgresql_using='gist'),
+        Index('lipas_geom_type_idx', 'geom_type'),
+        Index('lipas_gid_idx', 'gid', unique=True),
+    )
 
     def __repr__(self):
         return f"<LipasMirrorDB (id={self.sports_place_id!r}, name={self.name_fi!r})>"
@@ -74,25 +102,33 @@ class VirmaClass1(Base):
 
     __tablename__ = 'class1'
 
-    id = Column('id',Integer, primary_key=True,comment="typeCode")
-    class1_fi = Column('class1_fi',String, unique=False, nullable=False,comment="class1_fi")
-    class1_se = Column('class1_se',String, unique=False, nullable=False,comment="class1_se")
-    class1_en = Column('class1_en',String, unique=False, nullable=False,comment="class1_en")
+    id = Column('id',Integer, Sequence('class1_id_seq'), unique=False, nullable=False)
+    class1_fi = Column('class1_fi',String, primary_key=True, unique=False, nullable=False)
+    class1_se = Column('class1_se',String, unique=False, nullable=False)
+    class1_en = Column('class1_en',String, unique=False, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('class1_se', 'class1_en', 'class1_fi', name='class1_un'),
+    )
 
     def __repr__(self):
-        return f"<VirmaClass1 (id={self.typeCode!r}, name={self.class1_fi!r})>"
+        return f"<VirmaClass1 (id={self.id!r}, name={self.class1_fi!r})>"
 
 class VirmaClass2(Base):
 
     __tablename__ = 'class2'
 
-    id = Column('id',Integer, primary_key=True,comment="typeCode")
-    class2_fi = Column('class2_fi',String, unique=False, nullable=False,comment="class2_fi")
-    class2_se = Column('class2_se',String, unique=False, nullable=False,comment="class2_se")
-    class2_en = Column('class2_en',String, unique=False, nullable=False,comment="class2_en")
+    id = Column('id',Integer, Sequence('class2_id_seq'), unique=False, nullable=False)
+    class2_fi = Column('class2_fi',String, primary_key=True, unique=False, nullable=False)
+    class2_se = Column('class2_se',String, unique=False, nullable=False)
+    class2_en = Column('class2_en',String, unique=False, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('class2_se', 'class2_en', 'class2_fi', name='class2_un'),
+    )
 
     def __repr__(self):
-        return f"<VirmaClass2 (id={self.typeCode!r}, name={self.class2_fi!r})>"
+        return f"<VirmaClass2 (id={self.id!r}, name={self.class2_fi!r})>"
 
 class LipasTypes(Base):
 
@@ -102,7 +138,7 @@ class LipasTypes(Base):
     typeName = Column('type_name',String, unique=False, nullable=False,comment="typeName")
     typeName_se = Column('type_name_se',String, unique=False, nullable=True,comment="typeName se")
     typeName_en = Column('type_name_en',String, unique=False, nullable=True,comment="typeName en")
-    import_enabled = Column('import',Boolean, unique=False, nullable=False, default=True, comment="should this type be imported from lipas")
+    import_enabled = Column('import',Boolean, unique=False, nullable=False, default=True, server_default=text("true"), comment="import this type")
     #TODO:
     # geometry_type = Column('geometry_type',Enum(GeometryType), unique=False, nullable=False,comment="geom column type")
 
@@ -127,13 +163,19 @@ class Annotations(Base):
     sports_place = relationship('Lipas', backref='lipas_annotations', uselist=False, viewonly=True)
 
     class1_fi   = Column(String, ForeignKey("class1.class1_fi"), unique=False,  nullable=True,comment="virma class1")
-    class2_fi   = Column(String, ForeignKey("class2.class2_fi"), unique=False, nullable=True,comment="virma class2")
+    class2_fi   = Column(String, ForeignKey("class2.class2_fi"), unique=False,  nullable=True,comment="virma class2")
     www_picture = Column(String, unique=False, nullable=True,comment="show a picture")
-    admin_notes = Column(String, unique=False, nullable=True,comment="")
+    admin_notes = Column(String, unique=False, nullable=True)
     hidden      = Column(Boolean, unique=False, nullable=True, comment="is target hidden. NULL=not set by admin")
+
+    __table_args__ = (
+        Index('lipas_annotations_class1_fi_idx', 'class1_fi'),
+        Index('lipas_annotations_sports_place_id_idx', 'sports_place_id'),
+    )
 
     def __repr__(self):
         return f"<Annotation (id={self.sports_place_id!r}, class2_fi={self.class2_fi!r})>"
+
 
 
 # Returns scores from placeid to virma class1,class2 based on previous classes and uses those for missing annotations
@@ -256,8 +298,7 @@ def connect():
 
     engine = create_engine(connect_url, echo=False)
 
-    Base.metadata.create_all(engine)
-
+    # The schema is created by the alembic migrations, see alembic/versions.
     ReadySession = sessionmaker(bind=engine)
     #session = Session()
 
