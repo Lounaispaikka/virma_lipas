@@ -7,7 +7,7 @@ The data is enriched with annotations that are maintained in the database.
 The other direction (Virma → LIPAS) is handled by
 [digiretki_to_lipas](https://github.com/Lounaispaikka/digiretki_to_lipas).
 
-## Suomeksi: Virma ← Lipas -integraatio
+## Suomeksi
 
 Automaatio, joka kopioi [Lipas](https://lipas.fi/) -palvelun liikuntapaikka-aineiston
 [Virman](https://virma.fi/) tietokantaan, jotta Virma pystyy näyttämään ajantasaiset
@@ -38,19 +38,15 @@ Käyttöohjeet ylläpitäjälle: [ohjeistus.md](ohjeistus.md).
 Dependencies are managed with [uv](https://docs.astral.sh/uv/).
 
 ```shell
-uv sync                 # create .venv and install the locked dependencies
-cp lipas_virma_importer/config_example.py lipas_virma_importer/config.py
-uv run python -m lipas_virma_importer   # run the importer
+cp .env.example .env                        # and edit the database credentials
 uv run alembic upgrade head              # run database migrations
 uv run lipas-virma-importer              # console script, same as above
 ```
 
-`uv.lock` is committed, so use `uv sync --locked` (or `--frozen`) to install
-exactly the locked versions, e.g. in CI or Docker. Update the lock with
-`uv lock` (and `uv lock --upgrade` to also refresh the pinned versions).
 
-The database connection is read from `lipas_virma_importer/config.py`, which is
-not tracked in git. See `config_example.py` for the available options.
+The settings are read from the environment. For development they can be kept in
+a `.env` file in the project root, which is not tracked in git. See
+`.env.example` for the available options.
 
 ## Production
 
@@ -59,6 +55,7 @@ The importer runs as a nightly cron job. Prepare the environment once:
 ```shell
 cd /home/lipas/virma_lipas
 uv sync --locked
+cp .env.example .env                       # and edit the database credentials
 ```
 
 and run it with (the environment is not synced again, the lockfile is not
@@ -72,8 +69,12 @@ updated):
 
 ```shell
 docker build -t lipas-virma-importer .
-docker run --rm -v $PWD/lipas_virma_importer/config.py:/app/lipas_virma_importer/config.py lipas-virma-importer
+docker run --rm --env-file .env lipas-virma-importer
 ```
+
+The database must be reachable from the container, so `DB_HOST` cannot be
+`127.0.0.1` unless the container shares the network with the host
+(`docker run --network host`).
 
 ## License
 
@@ -81,8 +82,6 @@ MIT — see [LICENSE.md](LICENSE.md).
 
 ## Acknowledgements
 
-Code artifacts produced as part of the [Digiretki](https://tt.utu.fi/sweng/digiretki/) project. Co-funded by the European Union.
-
-*We thank the Lipas staff for their invaluable help in forming this solution. We also thank Metsähallitus for their guidance and support in progressing the project and this solution to the right direction!*
+The project was modified during the [Digiretki](https://tt.utu.fi/sweng/digiretki/) project. Co-funded by the European Union.
 
 <img width="1536" height="343" alt="EU logo" src="https://github.com/user-attachments/assets/9bf00b51-c1d7-4384-8b4b-1d66ff1f88bd" />
