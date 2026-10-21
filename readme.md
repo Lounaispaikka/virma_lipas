@@ -48,6 +48,26 @@ The settings are read from the environment. For development they can be kept in
 a `.env` file in the project root, which is not tracked in git. See
 `.env.example` for the available options.
 
+### The views are not refreshed by the importer
+
+The importer only writes to the `lipas`, `lipas_annotations` and `lipas_config`
+tables. The data that the Virma application reads comes from the
+`routes_combined` and `points_combined` views, which are materialized views in
+the production database. **Nothing in this repository refreshes them** — the
+production database refreshes them about once an hour, so the data shown in the
+user interface can lag behind the imported data.
+
+A developer can refresh them manually:
+
+```sql
+REFRESH MATERIALIZED VIEW CONCURRENTLY routes_combined;
+REFRESH MATERIALIZED VIEW CONCURRENTLY points_combined;
+```
+
+`database_custom_rules.sql` creates the two views as plain views, so in a
+development database there is nothing to refresh and the views always show the
+current data.
+
 ## Production
 
 The importer runs as a nightly cron job. Prepare the environment once:
