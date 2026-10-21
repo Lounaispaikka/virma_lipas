@@ -1,11 +1,27 @@
+FROM python:3.15-slim-bookworm
 
-FROM python:3.11-slim-buster
+COPY --from=ghcr.io/astral-sh/uv:0.13.4 /uv /uvx /bin/
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never \
+    UV_PROJECT_ENVIRONMENT=/app/.venv \
+    PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+# Install dependencies first so that the layer is cached
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-install-project --no-dev
 
-COPY . .
+COPY lipas_virma_importer ./lipas_virma_importer
+COPY alembic ./alembic
+COPY alembic.ini readme.md ./
 
-CMD [ "python3", "main.py"]
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-dev
+
+ENV PATH="/app/.venv/bin:$PATH"
+
+CMD [ "python", "-m", "lipas_virma_importer"]

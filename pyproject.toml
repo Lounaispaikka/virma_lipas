@@ -1,0 +1,45 @@
+[project]
+name = "lipas-virma-importer"
+version = "0.1.0"
+description = "Virma <- Lipas integration: imports LIPAS sports place data into a PostgreSQL/PostGIS database"
+readme = "readme.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.13",
+    "coloredlogs>=15.0",
+    "diskcache>=5.6",
+    "geoalchemy2>=0.17",
+    "geojson>=3.1",
+    "psycopg2-binary>=2.9.10",
+    "pyproj>=3.6",
+    "requests>=2.31",
+    "sentry-sdk>=2.0",
+    "shapely>=2.0",
+    "sqlalchemy>=2.0",
+]
+
+[project.scripts]
+lipas-virma-importer = "lipas_virma_importer.main:main"
+
+[build-system]
+requires = ["uv_build>=0.13.4,<0.14.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+module-name = "lipas_virma_importer"
+# config.py holds deployment specific secrets and is not tracked in git
+wheel-exclude = ["lipas_virma_importer/config.py"]
+source-exclude = ["lipas_virma_importer/config.py"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.14",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "W", "UP", "B"]
