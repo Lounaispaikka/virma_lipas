@@ -6,12 +6,12 @@ readme = "readme.md"
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.13",
-    "coloredlogs>=15.0",
     "diskcache>=5.6",
     "geoalchemy2>=0.17",
     "geojson>=3.1",
     "psycopg2-binary>=2.9.10",
     "pyproj>=3.6",
+    "python-dotenv>=1.1",
     "requests>=2.31",
     "sentry-sdk>=2.0",
     "shapely>=2.0",
@@ -28,9 +28,6 @@ build-backend = "uv_build"
 [tool.uv.build-backend]
 module-root = ""
 module-name = "lipas_virma_importer"
-# config.py holds deployment specific secrets and is not tracked in git
-wheel-exclude = ["lipas_virma_importer/config.py"]
-source-exclude = ["lipas_virma_importer/config.py"]
 
 [dependency-groups]
 dev = [

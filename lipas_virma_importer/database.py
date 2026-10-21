@@ -248,7 +248,7 @@ connect_url = sqlalchemy.engine.url.URL.create(
     username=config.username,
     password=config.password,
     host=config.host,
-    port=5432,
+    port=config.port,
     database = config.db
     )
 def connect():
