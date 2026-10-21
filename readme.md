@@ -7,6 +7,15 @@ The data is enriched with annotations that are maintained in the database.
 The other direction (Virma → LIPAS) is handled by
 [digiretki_to_lipas](https://github.com/Lounaispaikka/digiretki_to_lipas).
 
+## Suomeksi: Virma ← Lipas -integraatio
+
+Automaatio, joka kopioi [Lipas](https://lipas.fi/) -palvelun liikuntapaikka-aineiston
+[Virman](https://virma.fi/) tietokantaan, jotta Virma pystyy näyttämään ajantasaiset
+pisteet ja reitit. Kohteiden luokittelu (`class1_fi`, `class2_fi`) ja ylläpitäjän tekemät
+muutokset säilytetään tietokannassa.
+
+Käyttöohjeet ylläpitäjälle: [ohjeistus.md](ohjeistus.md).
+
 ## How it works
 
 - Every night the importer downloads the LIPAS sports places that have been modified
