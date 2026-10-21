@@ -18,5 +18,12 @@ Samalla se katsoo tietokannasta, olisiko mahdollisia uusia arvauksia jo olemassa
 ![lipas_manage](docs/lipas_manage.png)
  - Muita tietoja ei voi muuttaa!
 
-# Tiedot eivät päivity heti
-Aja seuraava komento tai odota tunti `REFRESH MATERIALIZED VIEW CONCURRENTLY routes_combined; REFRESH MATERIALIZED VIEW CONCURRENTLY points_combined;`
+# Tiedot päivittyvät yöllisen tuonnin jälkeen
+
+Virma lukee tiedot `routes_combined`- ja `points_combined`-näkymistä, jotka ovat
+tavallisia näkymiä eivätkä materiaalisia näkymiä. Ne näyttävät aina tuoreen datan, joten
+uudet kohteet näkyvät käyttöliittymässä heti yöllisen tuonnin jälkeen eikä mitään erillistä
+päivitystä tarvita.
+
+Vanhempi ohje `REFRESH MATERIALIZED VIEW CONCURRENTLY routes_combined;` ei toimi näillä
+näkymillä, koska ne eivät ole materiaalisia näkymiä (virhe: "is not a materialized view").

@@ -52,21 +52,16 @@ a `.env` file in the project root, which is not tracked in git. See
 
 The importer only writes to the `lipas`, `lipas_annotations` and `lipas_config`
 tables. The data that the Virma application reads comes from the
-`routes_combined` and `points_combined` views, which are materialized views in
-the production database. **Nothing in this repository refreshes them** — the
-production database refreshes them about once an hour, so the data shown in the
-user interface can lag behind the imported data.
+`routes_combined` and `points_combined` views.
 
-A developer can refresh them manually:
+In the production database these are **plain views**, not materialized views, so
+they always show the current data and nothing has to be refreshed. The same is
+true in a development database, where `database_custom_rules.sql` creates them.
 
-```sql
-REFRESH MATERIALIZED VIEW CONCURRENTLY routes_combined;
-REFRESH MATERIALIZED VIEW CONCURRENTLY points_combined;
-```
-
-`database_custom_rules.sql` creates the two views as plain views, so in a
-development database there is nothing to refresh and the views always show the
-current data.
+The older `REFRESH MATERIALIZED VIEW CONCURRENTLY routes_combined;` instruction
+in `ohjeistus.md` only works if the views have been changed into materialized
+views, and it fails with *"is not a materialized view"* on the plain views that
+are in use.
 
 ## Production
 
