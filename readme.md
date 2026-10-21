@@ -71,17 +71,13 @@ The database is shared with the other projects of the Virma application, so the
 migrations only touch the tables of this project: `class1`, `class2`,
 `lipas_config`, `lipas_types`, `lipas` and `lipas_annotations`. The views, the
 rules and the grants of the other projects are in `database_custom_rules.sql`,
-they are not managed by the migrations.
+they are not managed by the migrations. TODO: class1 should be handled by virma backend.
 
 ### The views are not refreshed by the importer
 
 The importer only writes to the `lipas`, `lipas_annotations` and `lipas_config`
 tables. The data that the Virma application reads comes from the
 `routes_combined` and `points_combined` views.
-
-In the production database these are **plain views**, not materialized views, so
-they always show the current data and nothing has to be refreshed. The same is
-true in a development database, where `database_custom_rules.sql` creates them.
 
 The older `REFRESH MATERIALIZED VIEW CONCURRENTLY routes_combined;` instruction
 in `ohjeistus.md` only works if the views have been changed into materialized
