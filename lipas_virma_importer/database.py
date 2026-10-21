@@ -1,36 +1,17 @@
 import enum
-from . import config
 import logging
+from datetime import datetime
 from functools import lru_cache
 
 import sqlalchemy
-from sqlalchemy import Column, Integer, Float, Date
-from sqlalchemy.orm import declarative_base
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from datetime import datetime, timedelta
-from sqlalchemy import Table, Column, Integer, String, DateTime, ForeignKey, Boolean
-from sqlalchemy.orm import relationship, backref
-from geoalchemy2 import Geometry
-from sqlalchemy.sql import func
-from sqlalchemy import Enum
 import sqlalchemy.orm.session
+from geoalchemy2 import Geometry
+from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, create_engine, func, or_, text
+from sqlalchemy.orm import contains_eager, declarative_base, relationship, sessionmaker
 
-#import coloredlogs
+from . import config
+
 log = logging.getLogger(__name__)
-
-from shapely.geometry import (
-    LineString,
-    MultiLineString,
-    MultiPoint,
-    Point,
-    Polygon,
-    shape,
-)
-from shapely.geometry.base import BaseGeometry
-from sqlalchemy.sql.expression import func as sqlexpr
-
-from sqlalchemy.exc import SQLAlchemyError
 
 # select class1_fi,class2_fi from lipas where typeCode=?
 # select most frequent class1_fi,class2_fi combo
@@ -41,7 +22,7 @@ class GeometryType(enum.Enum):
     point = 0
     route = 1
     area = 2
-    
+
 # DESIGN: https://gis.stackexchange.com/a/11506
 # DESIGN: https://stackoverflow.com/a/4813817
 class Lipas(Base):
@@ -53,16 +34,16 @@ class Lipas(Base):
 
     typeCode = Column('type_code',Integer, ForeignKey("lipas_types.type_code"), unique=False, nullable=False,comment="lipas category")
     cityCode = Column('city_code',Integer, unique=False, nullable=True,comment="cityCode")
-    
+
     name_fi = Column(String, unique=False, nullable=False,comment="name of place")
     info_fi = Column(String, unique=False, nullable=True,comment="lipas comment")
     www = Column(String, unique=False, nullable=True,comment="webpage")
     geom = Column(Geometry(srid=config.epsg), unique=False, nullable=False,comment="geometry, can be point or (m)linestring/route or possibly an area")
     geomType = Column('geom_type',Enum(GeometryType), unique=False, nullable=False,comment="geom column type (possibly redundant)")
-    
+
     #class1_fi = Column(String, unique=False, nullable=True,comment="virma class1")
     #class2_fi = Column(String, unique=False, nullable=True,comment="virma class2")
-    
+
     #muncipali = Column(String, unique=False, nullable=True,comment="virma style muncipality | lipas:postalOffice")
     #subregion = Column(String, unique=False, nullable=True,comment="virma style subgregion | lipas:neighborhood")
 
@@ -72,24 +53,21 @@ class Lipas(Base):
     telephone = Column(String, unique=False, nullable=True,comment="tel")
     #www_picture = Column(String, unique=False, nullable=True,comment="URL to image")
     length_m = Column(Integer, unique=False, nullable=True,comment="autocalculated length if route")
-    
+
     annotation = relationship("Annotations", cascade="all,delete", uselist=False, backref="lipas")
- 
+
     def __repr__(self):
         return f"<LipasMirrorDB (id={self.sports_place_id!r}, name={self.name_fi!r})>"
 
 shapelyTypeToDB={
   "Point": GeometryType.point,
-  "point": GeometryType.point,
   "MultiPoint": GeometryType.point,
 
-  "linestring": GeometryType.route,
   "LineString": GeometryType.route,
-  "multilinestring": GeometryType.route,
   "MultiLineString": GeometryType.route,
 
-  "MultiPolygon": GeometryType.area,
   "Polygon": GeometryType.area,
+  "MultiPolygon": GeometryType.area,
 }
 
 class VirmaClass1(Base):
@@ -100,7 +78,7 @@ class VirmaClass1(Base):
     class1_fi = Column('class1_fi',String, unique=False, nullable=False,comment="class1_fi")
     class1_se = Column('class1_se',String, unique=False, nullable=False,comment="class1_se")
     class1_en = Column('class1_en',String, unique=False, nullable=False,comment="class1_en")
-    
+
     def __repr__(self):
         return f"<VirmaClass1 (id={self.typeCode!r}, name={self.class1_fi!r})>"
 
@@ -112,7 +90,7 @@ class VirmaClass2(Base):
     class2_fi = Column('class2_fi',String, unique=False, nullable=False,comment="class2_fi")
     class2_se = Column('class2_se',String, unique=False, nullable=False,comment="class2_se")
     class2_en = Column('class2_en',String, unique=False, nullable=False,comment="class2_en")
-    
+
     def __repr__(self):
         return f"<VirmaClass2 (id={self.typeCode!r}, name={self.class2_fi!r})>"
 
@@ -127,7 +105,7 @@ class LipasTypes(Base):
     import_enabled = Column('import',Boolean, unique=False, nullable=False, default=True, comment="should this type be imported from lipas")
     #TODO:
     # geometry_type = Column('geometry_type',Enum(GeometryType), unique=False, nullable=False,comment="geom column type")
-        
+
     def __repr__(self):
         return f"<LipasType (id={self.typeCode!r}, name={self.typeName!r}, import={self.import_enabled!r})>"
 
@@ -160,7 +138,6 @@ class Annotations(Base):
 
 # Returns scores from placeid to virma class1,class2 based on previous classes and uses those for missing annotations
 
-from sqlalchemy import text
 statement_get_annotation_scores = text("""
     select
         type_code,
@@ -182,8 +159,8 @@ statement_get_annotation_scores = text("""
 @lru_cache(maxsize=2)
 def get_ignored_lipas_types():
     with ReadySession() as session:
-        q=session.query(LipasTypes.import_enabled,LipasTypes.typeCode).filter(LipasTypes.import_enabled == False)
-        return [row[1] for row in session.execute(q)]
+        q=session.query(LipasTypes.import_enabled,LipasTypes.typeCode).filter(LipasTypes.import_enabled.is_(False))
+        return [row[1] for row in q.all()]
 
 @lru_cache(maxsize=2)
 def get_annotation_scores():
@@ -219,20 +196,17 @@ def guess_annotation_for_type_code(typeCode):
         if ret.get("class2_fi"):
             return ret
 
-from sqlalchemy.orm import contains_eager
-from sqlalchemy import or_
-
 def process_unannotated(session):
     # https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html#using-contains-eager-to-load-a-custom-filtered-collection-result
-    return  (   
+    return  (
                 session.query(Lipas)
                     .join(Lipas.annotation)
                     .filter(or_(Annotations.class2_fi.is_(None),Annotations.class1_fi.is_(None)))
                     .options(contains_eager(Lipas.annotation))
-                    .execution_options(populate_existing=True)  
+                    .execution_options(populate_existing=True)
             )
 
-    
+
 
 def latestModifiedLipas():
     with ReadySession() as session:
@@ -241,7 +215,7 @@ def latestModifiedLipas():
 def latest_delete_query_time(set_latest=None):
     with ReadySession() as session:
         last_deletion_query = session.query(LipasConfig).filter_by(key = 'last_deletion_query').first()
-        
+
         if set_latest:
             log.info("Setting last_deletion_query %s",set_latest)
             if last_deletion_query:
@@ -256,7 +230,7 @@ def latest_delete_query_time(set_latest=None):
 
 def last_import_time(session,set_latest=None):
     last_import = session.query(LipasConfig).filter_by(key = 'last_import').first()
-    
+
     if set_latest:
         log.info("Setting last_import %s",set_latest)
         if last_import:
@@ -270,7 +244,7 @@ def last_import_time(session,set_latest=None):
 
 engine=None
 connect_url = sqlalchemy.engine.url.URL.create(
-    'postgresql',
+    'postgresql+psycopg2',
     username=config.username,
     password=config.password,
     host=config.host,
@@ -279,7 +253,7 @@ connect_url = sqlalchemy.engine.url.URL.create(
     )
 def connect():
     global engine,ReadySession
-    
+
     engine = create_engine(connect_url, echo=False)
 
     Base.metadata.create_all(engine)

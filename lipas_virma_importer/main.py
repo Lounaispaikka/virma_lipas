@@ -1,34 +1,28 @@
-from . import config
+import json
+import logging
+from datetime import datetime, timedelta
+
+import geojson
+import pyproj
+import shapely.wkb
+from geoalchemy2.shape import from_shape
+from pyproj import CRS
+from shapely.geometry import MultiLineString, shape
+from shapely.ops import transform
+
+from . import config, database, lipas_api
+from . import database as db
+
 DEBUG=config.DEBUG
 if config.SENTRY_DSN:
     #TODO: BUG: TEST: https://github.com/getsentry/sentry-python/issues/1941#issuecomment-1467873449
     import sentry_sdk
     sentry_sdk.init(config.SENTRY_DSN)
 
-from collections import defaultdict
-import logging
-from . import lipas_api
-import requests, os, sys
-from time import time
-from datetime import datetime, timedelta
-from . import database
-from shapely.geometry import asShape
-import shapely.wkb
-from geoalchemy2.shape import from_shape
-from shapely.geometry import shape, GeometryCollection
-import pyproj
-from geoalchemy2.functions import ST_FlipCoordinates,ST_GeomFromEWKT
-from pyproj import CRS
 crs = CRS.from_epsg(config.epsg)
-crs_geojson = CRS.from_epsg(4326) # CRS84 is equivalent to WGS84 for which the standard EPSG code is EPSG:4326. urn:ogc:def:crs:OGC:1.3:CRS84 
+crs_geojson = CRS.from_epsg(4326) # CRS84 is equivalent to WGS84 for which the standard EPSG code is EPSG:4326. urn:ogc:def:crs:OGC:1.3:CRS84
 
-import geojson,json
-from shapely.ops import transform
-from shapely.ops import linemerge
-from shapely.geometry import MultiLineString
 fromGeoJSONToOurProjection = pyproj.Transformer.from_crs(crs_geojson, crs, always_xy=True).transform
-
-
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
     datefmt='%Y-%m-%d:%H:%M:%S',
@@ -39,9 +33,8 @@ log.setLevel(DEBUG and logging.DEBUG or logging.INFO)
 log.info("Starting lipas")
 log.debug("Debug logging enabled")
 
-from . import database as db
 #TODO: untested, buggy
-langs = ["fi"]  #,"sv","en"]
+langs = ["fi"]  #,"sv","en"
 
 sportsPlaceTypes=None
 
@@ -62,7 +55,7 @@ def buildSportsPlaceTypes():
                     #"description": entry["description"],
                     "subCategory": entry["subCategory"],
                 }
-                
+
                 lipasType=db.LipasTypes(typeCode=entry["typeCode"],
                                     typeName=entry["name"])#TODO: ,geometryType=geometryType)
 
@@ -81,7 +74,7 @@ ignored_types = db.get_ignored_lipas_types()
 if ignored_types:
     log.info("Import ignoring sport place types: %s",ignored_types)
 
-importModifiedAfter = db.latestModifiedLipas() 
+importModifiedAfter = db.latestModifiedLipas()
 if importModifiedAfter:
     # TODO: Maybe excessive safety margin
     importModifiedAfter = importModifiedAfter-timedelta(days=1)
@@ -95,12 +88,11 @@ def processPlace(place, lang,session):
     typeCode = place["type"]["typeCode"]
     if ignored_types and typeCode in ignored_types:
         return
-    
+
 
     typeinfo = sportsPlaceTypes[lang][typeCode]
 
 
-    typeName = typeinfo["name"]
     geometryType = typeinfo["geometryType"]
     # Areas are not supported (2023 decision, Lounaistieto)
     if geometryType == db.GeometryType.area:
@@ -129,42 +121,45 @@ def processPlace(place, lang,session):
 
     # geojson cannot load tables, we must redump our data
     geomFeature=geojson.loads(json.dumps(geometries))
-    
+
     assert geomFeature.is_valid,str(geomFeature.errors())
-    
-    
+
+
     if geometryType == db.GeometryType.route:
         # merge linestrings to multilinestring
         shaped = MultiLineString([transform(fromGeoJSONToOurProjection, shape(f.geometry)) for f in geomFeature.features])
     else:
-
+        # points: the api may return several features (or something else than a point),
+        # the first one is used
         geometry = geomFeature[0]["geometry"]
-        assert len(geomFeature.features)==1
         shaped = transform(fromGeoJSONToOurProjection, shape(geometry))
-    
+
     if shaped.has_z:
         #TODO: Store Z
         #From: https://github.com/shapely/shapely/issues/709#issuecomment-816504794
         shaped=shapely.wkb.loads(shapely.wkb.dumps(shaped, output_dimension=2))
-    
-    # GeoJSON and PSQL coordinate orders are different 
+
+    # GeoJSON and PSQL coordinate orders are different
 
     # sports_place_id=510679
     # POINT (3054753 4041473) AFRICA?? BAD
     # POINT (311176  6698723) ANOTHER EXAMPLE? Straight from Lipas
     # POINT (222780  6734461) EXAMPLE OK
     #geom = ST_FlipCoordinates(ST_GeomFromEWKT(from_shape(shaped)))
-    
+
     # Make sure we are still what we say we are
-    geomType = db.shapelyTypeToDB[shaped.type]
-    assert geometryType==geomType
+    geomType = db.shapelyTypeToDB.get(shaped.geom_type)
+    if geomType != geometryType:
+        log.warning("Skipping sports place %s (%s): expected %s but the geometry is %s",
+                    sports_place_id, name, geometryType, shaped.geom_type)
+        return
 
     geom = from_shape(shaped,config.epsg)
 
     lastModified = datetime.strptime(place["lastModified"],
                                      config.LIPAS_DATETIME_FORMAT)
-    
-    
+
+
     sportsPlace = db.Lipas(sports_place_id=sports_place_id,
                             name_fi=name,
                             www=www,
@@ -179,7 +174,7 @@ def processPlace(place, lang,session):
                             telephone=place.get("phone-number"),
                             typeCode=typeCode)
     session.merge(sportsPlace)
-    
+
     #TODO: Infer class1,class2 based on previous classes
     #TODO: allow unclassified to be reclassified based on new classifications done by user
     sportsPlaceAnnotation = session.query(db.Annotations).filter(db.Annotations.sports_place_id == sports_place_id).first()
@@ -189,12 +184,11 @@ def processPlace(place, lang,session):
         session.add(sportsPlaceAnnotation)
 
 def processSportPlaces(sportsPlaces):
-    # TODO: BUG: we risk skipping lipas entries without full sync, because relying  on lastModified. Use 
+    # TODO: BUG: we risk skipping lipas entries without full sync, because relying  on lastModified. Use
     # NOTE: Has to be sessioned in language level due to above
     with db.ReadySession() as session:
         lastModifiedMax=None
-        for lang in langs:    
-            total=None
+        for lang in langs:
             for idx,sportsPlace in enumerate(sportsPlaces[lang]):
                 processPlace(sportsPlace, lang,session)
 
@@ -204,7 +198,6 @@ def processSportPlaces(sportsPlaces):
                 if idx%100==0:
                     log.debug("Processing: So far processed %d places for language %s",idx+1,lang)
                     session.commit()
-                total=idx
             log.debug("Finished processing %d places for language %s",idx+1,lang)
         db.last_import_time(session,lastModifiedMax)
         session.commit()
@@ -234,24 +227,24 @@ def delete_removed_sport_places():
         session.commit()
         db.latest_delete_query_time(latest_delete_query_time)
         session.commit()
-        
+
 def main():
     #print("download_deleted_sports_places",len(lipas_api.download_deleted_sports_places()))
-    
+
     log.info("Running delete_removed_sport_places()")
     delete_removed_sport_places()
-    
+
     global sportsPlaceTypes
     log.info("Running buildSportsPlaceTypes()")
     sportsPlaceTypes = buildSportsPlaceTypes()
     log.info("Running build_stat_classifications_kunta()")
-    stat_class = build_stat_classifications_kunta()
+    build_stat_classifications_kunta()
     log.info("Running downloadSportsPlacesUpdates(%s,after %s)",langs,importModifiedAfter)
     sportsPlaces = lipas_api.downloadSportsPlacesUpdates(langs,importModifiedAfter=None if config.FULL_UPDATE else importModifiedAfter)
-    
+
     log.info("Running processSportPlaces()")
     processSportPlaces(sportsPlaces)
-    
+
     log.info("Running run_annotation_guesses()")
     run_annotation_guesses()
 

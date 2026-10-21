@@ -1,26 +1,15 @@
-from . import config
-DEBUG=config.DEBUG
-
-from collections import defaultdict
+import json
 import logging
-import requests, os, sys
-from time import time
-from datetime import datetime, timedelta
-from . import database
-from shapely.geometry import asShape
-from geoalchemy2.shape import from_shape
-from shapely.geometry import shape, GeometryCollection
-import pyproj
-from geoalchemy2.functions import ST_FlipCoordinates,ST_GeomFromEWKT
-from pyproj import CRS
-crs = CRS.from_epsg(config.epsg)
-crs_geojson = CRS.from_epsg(4326) # CRS84 is equivalent to WGS84 for which the standard EPSG code is EPSG:4326. urn:ogc:def:crs:OGC:1.3:CRS84 
+from collections import defaultdict
+from datetime import datetime
 
-import geojson,json
-from shapely.ops import transform
+import requests
+from diskcache import FanoutCache
 
-fromGeoJSONToOurProjection = pyproj.Transformer.from_crs(crs_geojson, crs, always_xy=True).transform
+from . import config
+from . import database as db
 
+DEBUG=config.DEBUG
 
 log = logging.getLogger(__name__)
 log.setLevel(DEBUG and logging.DEBUG or logging.INFO)
@@ -33,8 +22,6 @@ def sports_place_types(lang='fi'):
         return requests.get(
                         "http://lipas.cc.jyu.fi/api/sports-place-types?lang=fi")
 
-from . import database as db
-
 def toGeoEnum(gtype):
         if gtype=="Point":
                 return db.GeometryType.point
@@ -42,7 +29,7 @@ def toGeoEnum(gtype):
                 return db.GeometryType.route
         elif gtype=="Polygon":
                 return db.GeometryType.area
-        assert False,"invalid geom type"    
+        raise ValueError("invalid geom type")
 
 
 
@@ -78,7 +65,7 @@ params = {
             "type.typeCode", # Needed to filter out areas
         #    "www",
         ],
-        
+
 }
 
 
@@ -130,7 +117,6 @@ sports_site_resp_example={
     "owner": "city"
 }
 
-from diskcache import FanoutCache
 cache = FanoutCache()
 @cache.memoize(expire=60*60*24*3, tag='stat_kunta')
 def get_stat_classifications_kunta():
@@ -145,8 +131,14 @@ def get_stat_classifications_kunta():
 
 def get_sports_place(sportsPlaceId):
     resp=requests.get(f'https://lipas.fi/api/sports-sites/{sportsPlaceId}')
-    resp.raise_for_status() 
+    resp.raise_for_status()
     return resp.json()
+
+def next_page_url(response, base):
+        """The api returns paging links with a trailing slash, which it does not serve."""
+        url=response.links['next']["url"]
+        path,sep,query=url.partition('?')
+        return base + path.rstrip('/') + sep + query
 
 def downloadSportsPlacesUpdates(langs,sportsPlaces=None,importModifiedAfter=None):
         params.pop("modifiedAfter", None)
@@ -166,8 +158,9 @@ def downloadSportsPlacesUpdates(langs,sportsPlaces=None,importModifiedAfter=None
                                 'next',
                                 None) and response.links['next'] != response.links['last']:
                         response = requests.get(
-                                'http://lipas.cc.jyu.fi' +
-                                response.links['next']["url"])  # TODO: hardcoded
+                                next_page_url(response,
+                                              'http://lipas.cc.jyu.fi'))  # TODO: hardcoded
+                        response.raise_for_status()
                         sportsPlaces[lang].extend(response.json())
                 log.info("Got %d sports places for %s", len(sportsPlaces[lang]),
                                          lang)
@@ -191,14 +184,16 @@ def download_deleted_sports_places(since=None):
     deletions=[]
     response = requests.get('http://lipas.cc.jyu.fi/api/deleted-sports-places',
                                                     params=params)
+    response.raise_for_status()
     deletions.extend(response.json())
     while response.links.get(
                     'next',
                     None) and response.links['next'] != response.links['last']:
             print("extra")
             response = requests.get(
-                    'http://lipas.cc.jyu.fi' +
-                    response.links['next']["url"])  # TODO: hardcoded
+                    next_page_url(response,
+                                  'http://lipas.cc.jyu.fi'))  # TODO: hardcoded
+            response.raise_for_status()
             deletions.extend(response.json())
     ret={}
     for deletion in deletions:
